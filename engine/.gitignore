@@ -1,0 +1,39 @@
+# Python files and bytecode
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.so
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# Distribution / packaging
+*.egg-info/
+dist/
+build/
+
+# Logs and databases
+*.log
+*.sqlite3
+*.db
+
+# IDE / Editor configurations (optional)
+.vscode/
+.idea/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# Python-specific file extensions
+*.pdb
+*.pyo
+
+# Environment variables
+.env
+
+# Heroku settings
+*.heroku/
