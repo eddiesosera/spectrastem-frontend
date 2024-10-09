@@ -1,53 +1,50 @@
-// File: src/components/FileUpload.tsx
-
+// File: frontend/components/Input/FileUpload.tsx
 import React, { useState } from "react";
 import axios from "axios";
+import FormatSelector from "./FormatSelector";
+import { useNavigate } from "react-router-dom";
 
-interface Stems {
-  [key: string]: string;
-}
-
-interface Progress {
-  [key: string]: string;
-}
+// interface FileUploadProps {
+//   onUploadSuccess: (trackName: string) => void;
+// }
 
 const FileUpload: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
-  const [stems, setStems] = useState<Stems | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [progress, setProgress] = useState<Progress | null>(null);
-  const [currentStem, setCurrentStem] = useState<string>("initializing");
   const [error, setError] = useState<string | null>(null);
+  const [format, setFormat] = useState<string>("mp3");
+  const [loading, setLoading] = useState<boolean>(false);
+  const navigate = useNavigate();
 
-  // Handle file selection
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files.length > 0) {
-      setFile(event.target.files[0]);
+    const selectedFile = event.target.files?.[0];
+    if (selectedFile) {
+      // Validate file size (limit to 50MB)
+      if (selectedFile.size > 50 * 1024 * 1024) {
+        setError("File exceeds the size limit of 50MB.");
+        setFile(null);
+      } else {
+        setError(null);
+        setFile(selectedFile);
+      }
     }
   };
 
-  // Handle form submission to upload the file
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-
     if (!file) {
-      setError("Please select a file");
+      setError("Please select a file.");
       return;
     }
 
+    setLoading(true);
+
     const formData = new FormData();
     formData.append("file", file);
-
-    setLoading(true); // Show loading state
-    setError(null); // Reset error
-    setStems(null);
-    setProgress(null);
-    setCurrentStem("initializing");
+    formData.append("format", format);
 
     try {
-      // Make a POST request to upload the file
       const response = await axios.post(
-        "http://127.0.0.1:5000/api/upload-audio",
+        "http://localhost:5000/api/upload-audio",
         formData,
         {
           headers: {
@@ -56,103 +53,40 @@ const FileUpload: React.FC = () => {
         }
       );
 
-      const { track_name } = response.data;
-
-      // Start polling for progress updates
-      pollProgress(track_name);
-    } catch (error) {
-      console.error("Error uploading the file:", error);
-      setError("There was an error processing the file.");
-      setLoading(false); // Hide loading state
-    }
-  };
-
-  // Function to poll the backend for progress updates
-  const pollProgress = (trackName: string) => {
-    const intervalId = setInterval(async () => {
-      try {
-        const response = await axios.get(
-          `http://127.0.0.1:5000/api/progress/${trackName}`
-        );
-        const status = response.data;
-
-        // Update the frontend based on the status
-        if (status.error) {
-          setError(status.error);
-          setLoading(false);
-          clearInterval(intervalId);
-          return;
-        }
-
-        // Update progress state
-        setProgress(status.stems);
-        setCurrentStem(status.current_stem);
-
-        // Check if all stems are completed
-        if (status.status === "completed") {
-          // All stems are completed
-          // Update state with the paths to the stems
-          setStems({
-            vocals: `http://127.0.0.1:5000/stems/${trackName}/vocals.wav`,
-            drums: `http://127.0.0.1:5000/stems/${trackName}/drums.wav`,
-            bass: `http://127.0.0.1:5000/stems/${trackName}/bass.wav`,
-            other: `http://127.0.0.1:5000/stems/${trackName}/other.wav`,
-          });
-          setError(null);
-          setLoading(false);
-          clearInterval(intervalId);
-        }
-      } catch (error) {
-        console.error("Error checking progress:", error);
-        setError("There was an error checking progress.");
-        setLoading(false);
-        clearInterval(intervalId);
+      if (
+        response.status === 200 &&
+        response.data.message === "Processing completed successfully"
+      ) {
+        // Navigate to the results page with the response data
+        navigate("/results", { state: { data: response.data } });
+        setError(null);
+      } else {
+        setError(response.data.error || "Unexpected response from the server.");
       }
-    }, 1000); // Poll every 1 second
+    } catch (err) {
+      setError("An error occurred during upload: " + err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <div>
-      <h2>Upload an Audio File for Stem Separation</h2>
+      <h2>Upload Your Audio</h2>
       <form onSubmit={handleSubmit}>
-        <input type="file" accept="audio/*" onChange={handleFileChange} />
-        <button type="submit">Upload</button>
+        <input
+          type="file"
+          onChange={handleFileChange}
+          accept=".mp3,.wav,.flac,.ogg,.aac"
+        />
+        {error && <p style={{ color: "red" }}>{error}</p>}
+
+        <FormatSelector format={format} setFormat={setFormat} />
+
+        <button type="submit" disabled={loading || !file}>
+          {loading ? "Uploading..." : "Upload"}
+        </button>
       </form>
-
-      {loading && (
-        <div>
-          <p>Processing... Please wait.</p>
-          <p>
-            Current Stem:{" "}
-            {currentStem === "none"
-              ? "Completed"
-              : currentStem.charAt(0).toUpperCase() + currentStem.slice(1)}
-          </p>
-          {progress && (
-            <ul>
-              {["vocals", "drums", "bass", "other"].map((stem) => (
-                <li key={stem}>
-                  {stem.charAt(0).toUpperCase() + stem.slice(1)}:{" "}
-                  {progress[stem]}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      )}
-      {error && <p style={{ color: "red" }}>{error}</p>}
-
-      {stems && (
-        <div>
-          <h3>Separated Stems</h3>
-          {["vocals", "drums", "bass", "other"].map((stem) => (
-            <div key={stem}>
-              <h4>{stem.charAt(0).toUpperCase() + stem.slice(1)}</h4>
-              <audio controls src={stems[stem]} />
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 };

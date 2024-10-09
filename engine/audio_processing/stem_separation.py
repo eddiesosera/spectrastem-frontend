@@ -6,36 +6,34 @@ import logging
 import sys
 
 def separate_audio_with_demucs(file_path, stems_to_process, output_dir):
-    # Convert the relative file path to an absolute path
     abs_file_path = os.path.abspath(file_path)
-
-    # Use the Python executable to run Demucs
-    python_executable = sys.executable  # Gets the path to the Python interpreter being used
+    python_executable = sys.executable
 
     # Construct the Demucs command
     command = [
         python_executable,
-        "-u",  # Unbuffered stdout and stderr
         "-m", "demucs",
         abs_file_path,
         "-o", output_dir,
         "-n", "mdx_extra_q",
         "--filename", "{stem}.{ext}",
-        "--two-stems", stems_to_process
+        "--mp3"
     ]
 
-    # Log the command being run
-    logging.info(f"Command being run: {' '.join(command)}")
+    logging.info(f"Running Demucs command: {' '.join(command)}")
 
-    try:
-        # Run the command using subprocess, capturing stdout and stderr
-        process = subprocess.Popen(
-            command,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            bufsize=1,
-            text=True
-        )
-        return process
-    except Exception as e:
-        raise Exception(f"Demucs failed to start: {e}")
+    # Run the command synchronously and capture the output
+    result = subprocess.run(
+        command,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True
+    )
+
+    # Log the output and errors
+    if result.stdout:
+        logging.info(f"Demucs output: {result.stdout}")
+    if result.stderr:
+        logging.error(f"Demucs error: {result.stderr}")
+
+    return result

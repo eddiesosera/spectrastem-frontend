@@ -1,11 +1,13 @@
+// File: frontend/pages/Home/Home.tsx
 import React from "react";
-import TestCommunication from "../Tests/EngineLinkTest";
+import FileUpload from "../../components/Input/FileUpload";
 
 const Home: React.FC = () => {
   return (
     <div>
-      <h1>Home Page</h1>
-      <TestCommunication />
+      <h1>Welcome to the Home Page</h1>
+      {/* Include the FileUpload component */}
+      <FileUpload />
     </div>
   );
 };
