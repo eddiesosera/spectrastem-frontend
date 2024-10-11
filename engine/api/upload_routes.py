@@ -3,11 +3,11 @@ from flask import Blueprint, request, jsonify
 from werkzeug.utils import secure_filename
 from utils.validators import allowed_file, validate_file_size
 from audio_processing.stem_separation import separate_audio_with_demucs
+from audio_processing.midi_generation import generate_midi_from_audio
 from utils.aws_s3 import upload_to_s3
 from utils.status_tracker import update_status
 import os
 import logging
-# import fcntl
 
 UPLOAD_FOLDER = './uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -40,8 +40,21 @@ def upload_audio():
 
     track_name = filename  # Use full filename including extension
 
-    # Process audio synchronously and return response
-    return process_audio_from_upload(file_path, track_name)
+    # Check process options
+    process_stems = request.form.get("process_stems", "false").lower() == "true"
+    generate_midi = request.form.get("generate_midi", "false").lower() == "true"
+
+    responses = {}
+
+    # Process stem separation if selected
+    if process_stems:
+        responses["stems"] = process_audio_from_upload(file_path, track_name)
+
+    # Generate MIDI if selected
+    if generate_midi:
+        responses["midi"] = process_midi_generation(file_path, track_name)
+
+    return jsonify(responses), 200
 
 def process_audio_from_upload(file_path, track_name):
     try:
@@ -70,13 +83,47 @@ def process_audio_from_upload(file_path, track_name):
         update_status(track_name, "Completed", "Done", stems=s3_urls)
 
         logging.info(f"Processing completed successfully for {track_name}")
-        return jsonify({
+        return {
             "message": "Processing completed successfully",
             "track_name": track_name,
             "status": "Completed",
-            "stems": s3_urls  # s3_urls is a dictionary of stem names and URLs
-        }), 200
+            "stems": s3_urls
+        }
 
     except Exception as e:
         logging.error(f"Error during processing: {e}")
-        return jsonify({"error": "Error during processing", "details": str(e)}), 500
+        update_status(track_name, "Failed", "Error during processing")
+        return {"error": "Error during processing", "details": str(e)}
+
+def process_midi_generation(file_path, track_name):
+    try:
+        logging.info(f"Triggering MIDI generation for {track_name}")
+
+        # Update status to "Processing"
+        update_status(track_name, "Processing", "MIDI Generation Starting")
+
+        # Create output directory for MIDI files
+        output_dir = f"./midi_output/{track_name}"
+        os.makedirs(output_dir, exist_ok=True)
+
+        # Generate MIDI file
+        midi_file_path = generate_midi_from_audio(file_path, output_dir)
+
+        # Upload MIDI file to S3
+        s3_urls = upload_to_s3(output_dir, track_name)
+
+        # Update status to "Completed"
+        update_status(track_name, "Completed", "MIDI Generation Done", stems=s3_urls)
+
+        logging.info(f"MIDI generation completed successfully for {track_name}")
+        return {
+            "message": "MIDI generation completed successfully",
+            "track_name": track_name,
+            "status": "Completed",
+            "midi_files": s3_urls
+        }
+
+    except Exception as e:
+        logging.error(f"Error during MIDI generation: {e}")
+        update_status(track_name, "Failed", "Error during MIDI generation")
+        return {"error": "Error during MIDI generation", "details": str(e)}

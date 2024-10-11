@@ -35,5 +35,9 @@ Thumbs.db
 # Environment variables
 .env
 
+# Audio file uploads
+stems_output/
+uploads/
+
 # Heroku settings
 *.heroku/
