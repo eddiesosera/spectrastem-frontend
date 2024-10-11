@@ -3,22 +3,16 @@
 import React from "react";
 import { useLocation } from "react-router-dom";
 
-interface ProcessingResult {
-  track_name: string;
-  stems: { [key: string]: string };
-}
-
 const ResultsPage: React.FC = () => {
-  const location = useLocation<{ data: ProcessingResult }>();
-  const data = location.state?.data;
+  const location = useLocation();
+  const data = location.state!.data;
 
   if (!data) {
     return <div>Error: No data available.</div>;
   }
 
-  const { track_name, stems } = data;
+  const { track_name, stems, midi_files } = data;
 
-  // Function to determine MIME type based on file extension
   const getMimeType = (filename: string): string => {
     const extension = filename.split(".").pop()?.toLowerCase();
     switch (extension) {
@@ -41,18 +35,37 @@ const ResultsPage: React.FC = () => {
     <div>
       <h2>Processing Completed for {track_name}</h2>
       <div>
-        <h3>Extracted Stems:</h3>
-        <ul>
-          {Object.entries(stems).map(([stemName, stemUrl]) => (
-            <li key={stemName}>
-              <h4>{stemName}</h4>
-              <audio controls crossOrigin="anonymous">
-                <source src={stemUrl} type={getMimeType(stemName)} />
-                Your browser does not support the audio tag.
-              </audio>
-            </li>
-          ))}
-        </ul>
+        {stems && (
+          <div>
+            <h3>Extracted Stems:</h3>
+            <ul>
+              {Object.entries(stems).map(([stemName, stemUrl]) => (
+                <li key={stemName}>
+                  <h4>{stemName}</h4>
+                  <audio controls>
+                    <source src={stemUrl} type={getMimeType(stemUrl)} />
+                    Your browser does not support the audio tag.
+                  </audio>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {midi_files && (
+          <div>
+            <h3>Generated MIDI Files:</h3>
+            <ul>
+              {Object.entries(midi_files).map(([midiName, midiUrl]) => (
+                <li key={midiName}>
+                  <a href={midiUrl} download>
+                    {midiName}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -4,15 +4,13 @@ import axios from "axios";
 import FormatSelector from "./FormatSelector";
 import { useNavigate } from "react-router-dom";
 
-// interface FileUploadProps {
-//   onUploadSuccess: (trackName: string) => void;
-// }
-
 const FileUpload: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [format, setFormat] = useState<string>("mp3");
   const [loading, setLoading] = useState<boolean>(false);
+  const [processStems, setProcessStems] = useState<boolean>(true);
+  const [generateMidi, setGenerateMidi] = useState<boolean>(false);
   const navigate = useNavigate();
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -41,6 +39,8 @@ const FileUpload: React.FC = () => {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("format", format);
+    formData.append("process_stems", String(processStems));
+    formData.append("generate_midi", String(generateMidi));
 
     try {
       const response = await axios.post(
@@ -82,6 +82,25 @@ const FileUpload: React.FC = () => {
         {error && <p style={{ color: "red" }}>{error}</p>}
 
         <FormatSelector format={format} setFormat={setFormat} />
+
+        <div>
+          <label>
+            <input
+              type="checkbox"
+              checked={processStems}
+              onChange={() => setProcessStems(!processStems)}
+            />
+            Process Stems
+          </label>
+          <label>
+            <input
+              type="checkbox"
+              checked={generateMidi}
+              onChange={() => setGenerateMidi(!generateMidi)}
+            />
+            Generate MIDI
+          </label>
+        </div>
 
         <button type="submit" disabled={loading || !file}>
           {loading ? "Uploading..." : "Upload"}
