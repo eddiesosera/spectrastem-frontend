@@ -55,7 +55,7 @@ const FileUpload: React.FC = () => {
 
       if (
         response.status === 200 &&
-        response.data.message === "Processing completed successfully"
+        response.data.midi.message === "Processing completed successfully"
       ) {
         // Navigate to the results page with the response data
         navigate("/results", { state: { data: response.data } });
