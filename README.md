@@ -73,13 +73,13 @@ Once both the **interface** and **engine** are set up, follow the specific instr
 
 ## Interface
 
-The **interface** is built using React to provide an easy-to-use web application for users to interact with the audio processing features. Detailed instructions for the interface setup and usage are available [here](interface/README.md).
+The **interface** is built using React (Typescript) and Vite to provide an easy-to-use web application for users to interact with the audio processing features. Detailed instructions for the interface setup and usage are available [here](./interface/).
 
 <!-- ENGINE -->
 
 ## Engine
 
-The **engine** is a Flask server that handles the core functionality of Spectrastem, including stem separation, MIDI generation, and sheet music creation. To dive deeper into how to configure and run the engine, refer to the dedicated [engine README](engine/README.md).
+The **engine** is a Flask server that handles the core functionality of Spectrastem, including stem separation, MIDI generation, and sheet music creation. To dive deeper into how to configure and run the engine, refer to the dedicated [engine README](./engine/).
 
 <!-- CONTRIBUTING -->
 
@@ -103,16 +103,19 @@ Distributed under the MIT License. See `LICENSE` for more information.
 
 ## Contact
 
-- **Author**: [Your Name](mailto:your-email)  
-- **Project Link**: https://github.com/your-repo/spectrastem
+- **Author**: [Eddie Sosera](mailto:eddiesoserawork@gmail.com)  
+- **Project Link**: https://github.com/eddiesosera/spectrastem-frontend
 
 <!-- ACKNOWLEDGEMENTS -->
 
 ## Acknowledgements
 
-- ONNX for model support.
-- Librosa for audio processing.
+- ONNX by Linux for model support. [View documentation](
+- Librosa for audio processing. [View documentation](https://librosa.org/doc/latest/index.html)
+- Demucs by Meta for stem processing. [View documentation](https://github.com/adefossez/demucs)
+- BasicPitch by Spotify for MIDI processing. [View documentation](https://basicpitch.spotify.com/))  
 
 [linkedin-shield]: https://img.shields.io/badge/-LinkedIn-black.svg?style=flat-square&logo=linkedin&colorB=555
-[linkedin-url]: https://www.linkedin.com/
+[linkedin-url]: https://www.linkedin.com/in/eddiesosera
 [instagram-shield]: https://img.shields.io/badge/-Instagram-black.svg?style=flat-square&logo=instagram&colorB=555
+[instagram-url]: https://www.instagram.com/engineeredimagination
