@@ -22,7 +22,7 @@
 //     const fetchStatus = async () => {
 //       try {
 //         const response = await axios.get(
-//           `http://localhost:5000/api/status/${trackName}`
+//           `httweb-production-5c72.up.railway.app/api/status/${trackName}`
 //         );
 //         setStatus(response.data);
 //       } catch (err) {

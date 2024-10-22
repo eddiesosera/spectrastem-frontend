@@ -26,7 +26,7 @@ const StatusPage: React.FC = () => {
     const fetchStatus = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:5000/api/status/${encodeURIComponent(
+          `web-production-5c72.up.railway.app/api/status/${encodeURIComponent(
             decodedTrackName
           )}`
         );

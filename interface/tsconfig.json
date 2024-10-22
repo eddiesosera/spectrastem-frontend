@@ -1,7 +1,14 @@
 {
   "files": [],
+  "compilerOptions": {
+    "composite": true,
+    "allowJs": true,
+    "checkJs": false, // Optional: Disable type checking for JS files
+    "jsx": "react"
+  },
   "references": [
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }
-  ]
+  ],
+  "include": ["src", "src/wavesurfer.d.ts"]
 }

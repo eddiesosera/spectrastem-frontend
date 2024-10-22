@@ -20,13 +20,13 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error("Error caught by ErrorBoundary:", error, errorInfo);
+    console.error("1. Error caught by ErrorBoundary:", error, errorInfo);
   }
 
   render() {
     if (this.state.hasError) {
       // Renders fallback UI when an error occurs
-      return <div>Error Boundry: Something went wrong.</div>;
+      return <div>1. Error Boundry: Something went wrong.</div>;
     }
 
     return this.props.children;

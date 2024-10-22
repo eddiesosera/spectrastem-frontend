@@ -1,7 +1,7 @@
 // File: frontend/utils/api.ts
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:5000";
+const API_BASE_URL = "web-production-5c72.up.railway.app";
 
 // Upload audio file
 export const uploadAudioFile = async (formData: FormData) => {
