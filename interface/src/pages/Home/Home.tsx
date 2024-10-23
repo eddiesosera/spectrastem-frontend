@@ -17,7 +17,7 @@ const Home: React.FC = () => {
 
   return (
     <div>
-      <h1>Welcome to the Home Page!</h1>
+      <div className="p-4">Hello, Tailwind!</div>
       <Waveform />
       Account type: {userSubscription}
     </div>
