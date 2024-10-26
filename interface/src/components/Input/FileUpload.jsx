@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import WaveSurferModule from "../../utils/ui/wavesurfer.utils"; // Adjust the path as needed
+import Dropzone from "./../../../node_modules/react-dropzone-uploader/dist/Dropzone";
 // s
 
 const FileUpload = () => {
@@ -100,10 +101,32 @@ const FileUpload = () => {
     }
   };
 
+  // specify upload params and url for your files
+  const getUploadParams = ({ meta }) => {
+    return { url: "https://httpbin.org/post" };
+  };
+
+  // called every time a file's `status` changes
+  const handleChangeStatus = ({ meta, file }, status) => {
+    console.log(status, meta, file);
+  };
+
+  // receives array of files that are done uploading when submit button is clicked
+  const handleSubmit = (files, allFiles) => {
+    console.log(files.map((f) => f.meta));
+    allFiles.forEach((f) => f.remove());
+  };
+
   return (
     <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
       <h2>Audio File Upload and Editor</h2>
       <input type="file" onChange={handleFileChange} accept="audio/*" />
+      <Dropzone
+        getUploadParams={getUploadParams}
+        onChangeStatus={handleChangeStatus}
+        onSubmit={handleSubmit}
+        accept="image/*,audio/*,video/*"
+      />
       {error && <p style={{ color: "red" }}>{error}</p>}
       {isLoading && (
         <div style={{ marginTop: "20px", fontWeight: "bold" }}>Loading...</div>
