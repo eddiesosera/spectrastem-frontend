@@ -1,37 +1,69 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useState } from "react";
+import Logo from "../../assets/img/spectrastem_logo_w_v1.png";
+import Dropdown from "../Dropdown/dropdown";
+import DropdownManager from "./../Dropdown/dropdown_manager";
+import { desktopItems, profileDropdownItems } from "./nav_items";
+import { Bars3BottomRightIcon } from "@heroicons/react/24/solid";
 
 const Navbar: React.FC = () => {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [stemsDropdownOpen, setStemsDropdownOpen] = useState(false);
-  const [midiDropdownOpen, setMidiDropdownOpen] = useState(false);
-  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
-
-  // Refs for detecting outside clicks to close menu and profile dropdown
-  const menuRef = useRef<HTMLDivElement>(null);
-  const profileRef = useRef<HTMLDivElement>(null);
+  const dropdownManager = DropdownManager.getInstance();
+  const [activeDropdownId, setActiveDropdownId] = useState<string | null>(null);
 
   useEffect(() => {
-    // Close menus when clicking outside
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setMenuOpen(false);
-      }
-      if (
-        profileRef.current &&
-        !profileRef.current.contains(event.target as Node)
-      ) {
-        setProfileDropdownOpen(false);
-      }
+    const handleDropdownChange = (id: string | null) => {
+      setActiveDropdownId(id);
     };
-    if (menuOpen || profileDropdownOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    } else {
-      document.removeEventListener("mousedown", handleClickOutside);
-    }
+    dropdownManager.addListener(handleDropdownChange);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      dropdownManager.removeListener(handleDropdownChange);
     };
-  }, [menuOpen, profileDropdownOpen]);
+  }, [dropdownManager]);
+
+  const MobileMenu = () => {
+    return (
+      <>
+        <Dropdown
+          id="mobileStemsDropdown"
+          header={
+            <span className="text-gray-700 hover:text-black font-semibold">
+              Stems
+            </span>
+          }
+          items={[
+            {
+              label: "Instrument & Vox",
+              onClick: () => console.log("Instrument & Vox clicked"),
+            },
+          ]}
+        />
+        <Dropdown
+          id="mobileMidiDropdown"
+          header={
+            <span className="text-gray-700 hover:text-black font-semibold">
+              Midi
+            </span>
+          }
+          items={[
+            {
+              label: "Option 1",
+              onClick: () => console.log("Option 1 clicked"),
+            },
+            {
+              label: "Option 2",
+              onClick: () => console.log("Option 2 clicked"),
+            },
+          ]}
+        />
+        <a href="#" className="block text-gray-700 hover:text-black">
+          Sheet
+        </a>
+        <a href="#" className="block text-gray-700 hover:text-black">
+          About
+        </a>
+      </>
+    );
+  };
 
   return (
     <nav className="bg-white border-b shadow-sm relative">
@@ -39,85 +71,53 @@ const Navbar: React.FC = () => {
         <div className="flex justify-between items-center h-16">
           {/* Left Section: Logo */}
           <div className="flex items-center">
-            <img
-              src="/path/to/logo.png"
-              alt="SpectraStem Logo"
-              className="h-8 w-8 mr-2"
-            />
-            <span className="text-xl font-semibold text-gray-800">
-              SpectraStem
-            </span>
+            <img src={Logo} alt="SpectraStem Logo" className="h-6 mr-2" />
           </div>
 
-          {/* Desktop Links */}
+          {/* Middle Section: Dropdown Links */}
           <div className="hidden md:flex space-x-6">
-            <div className="relative group">
-              <button className="text-gray-700 hover:text-black focus:outline-none">
-                Stems
-              </button>
-              <div className="absolute hidden group-hover:block bg-white shadow-lg rounded p-2 mt-2">
+            {desktopItems.map((item) =>
+              item.type === "dropdown" ? (
+                <Dropdown
+                  key={item.id}
+                  id={item.id}
+                  header={
+                    <span
+                      className={`text-gray-700 hover:text-black ${
+                        dropdownManager.isActive(item.id) ? "font-bold" : ""
+                      }`}
+                    >
+                      {item.header}
+                    </span>
+                  }
+                  items={item.items}
+                />
+              ) : (
                 <a
-                  href="#"
-                  className="block px-4 py-2 text-gray-600 hover:bg-gray-100"
+                  key={item.label}
+                  href={item.href}
+                  className="text-base text-gray-700 hover:text-black"
                 >
-                  Instrument & Vox
+                  {item.label}
                 </a>
-              </div>
-            </div>
-            <div className="relative group">
-              <button className="text-black font-semibold hover:text-black focus:outline-none">
-                Midi
-              </button>
-              <div className="absolute hidden group-hover:block bg-white shadow-lg rounded p-2 mt-2">
-                <a
-                  href="#"
-                  className="block px-4 py-2 text-gray-600 hover:bg-gray-100"
-                >
-                  Option 1
-                </a>
-              </div>
-            </div>
-            <a href="#" className="text-gray-700 hover:text-black">
-              Sheet
-            </a>
-            <a href="#" className="text-gray-700 hover:text-black">
-              About
-            </a>
+              )
+            )}
           </div>
 
-          {/* Right Section: Profile Icon */}
-          <div
-            className="hidden md:flex items-center space-x-4 relative"
-            ref={profileRef}
-          >
-            <button
-              onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-              className="focus:outline-none"
-            >
-              <img
-                src="/path/to/profile-pic.jpg"
-                alt="Profile"
-                className="h-8 w-8 rounded-full"
-              />
-            </button>
-
-            {/* Profile Dropdown */}
-            {profileDropdownOpen && (
-              <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-2 z-50">
-                <a
-                  href="#"
-                  className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                >
-                  My Account
-                </a>
-                <a
-                  href="#"
-                  className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                >
-                  Billing
-                </a>
-              </div>
-            )}
+          {/* Right Section: Profile Dropdown */}
+          <div className="hidden md:flex items-center space-x-4">
+            <Dropdown
+              id="profileDropdown"
+              header={
+                <img
+                  src="/path/to/profile-pic.jpg"
+                  alt="Profile"
+                  className="h-8 w-8 rounded-full cursor-pointer"
+                />
+              }
+              items={profileDropdownItems}
+              alignRight
+            />
           </div>
 
           {/* Mobile Menu Toggle Button */}
@@ -127,85 +127,15 @@ const Navbar: React.FC = () => {
               onClick={() => setMenuOpen(!menuOpen)}
               className="text-gray-700 focus:outline-none"
             >
-              {/* Hamburger Icon */}
-              <svg
-                className="h-6 w-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M4 6h16M4 12h16m-7 6h7"
-                ></path>
-              </svg>
+              <Bars3BottomRightIcon className="size-6" />
             </button>
           </div>
         </div>
 
         {/* Floating Mobile Dropdown Menu */}
         {menuOpen && (
-          <div
-            ref={menuRef}
-            className="absolute top-16 right-4 bg-white shadow-lg rounded-lg p-4 w-60 space-y-2 z-50"
-          >
-            <div>
-              <button
-                onClick={() => setStemsDropdownOpen(!stemsDropdownOpen)}
-                className="flex justify-between w-full text-left text-gray-700 hover:text-black font-semibold"
-              >
-                Stems
-                <span>{stemsDropdownOpen ? "▲" : "▼"}</span>
-              </button>
-              {stemsDropdownOpen && (
-                <div className="pl-4 mt-1">
-                  <a href="#" className="block text-gray-600 hover:text-black">
-                    Instrument & Vox
-                  </a>
-                </div>
-              )}
-            </div>
-
-            <div>
-              <button
-                onClick={() => setMidiDropdownOpen(!midiDropdownOpen)}
-                className="flex justify-between w-full text-left text-gray-700 hover:text-black font-semibold"
-              >
-                Midi
-                <span>{midiDropdownOpen ? "▲" : "▼"}</span>
-              </button>
-              {midiDropdownOpen && (
-                <div className="pl-4 mt-1">
-                  <a href="#" className="block text-gray-600 hover:text-black">
-                    Option 1
-                  </a>
-                </div>
-              )}
-            </div>
-
-            <a href="#" className="block text-gray-700 hover:text-black">
-              Sheet
-            </a>
-            <a href="#" className="block text-gray-700 hover:text-black">
-              About
-            </a>
-
-            <div className="mt-4 flex items-center border border-gray-300 rounded-full p-2">
-              <img
-                src="/path/to/profile-pic.jpg"
-                alt="Profile"
-                className="h-8 w-8 rounded-full mr-2"
-              />
-              <a
-                href="#"
-                className="text-gray-700 font-semibold hover:text-black"
-              >
-                My Account
-              </a>
-            </div>
+          <div className="md:hidden absolute top-16 right-4 bg-white shadow-lg rounded-lg p-4 w-60 space-y-2 z-50">
+            <MobileMenu />
           </div>
         )}
       </div>
