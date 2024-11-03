@@ -5,8 +5,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../redux/store";
 import { setLoopRegion } from "../../../redux/slices/audio.slice";
 import "./waveform.css";
-import { useNavigate } from "react-router-dom";
-import axios from "axios";
 
 interface WaveformPreview {
   audioFile: any;
@@ -19,54 +17,52 @@ const Waveform: React.FC<WaveformPreview> = ({ audioFile }) => {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null); // Store the uploaded file
   const [isPlaying, setIsPlaying] = useState(false); // Play/pause state
   const [uploadStatus, setUploadStatus] = useState(""); // Status of upload
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const navigate = useNavigate();
   const userSubscription = useSelector(
     (state: RootState) => state.user.userDetails.accountType
   );
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+  // Handle file upload from desktop
+  // const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = event.target.files?.[0];
+  //   if (file) {
+  //     setUploadedFile(file);
+  //     const reader = new FileReader();
+  //     reader.onload = (e) => {
+  //       if (wavesurfer.current && e.target?.result) {
+  //         wavesurfer.current.load(e.target.result as string); // Load audio file into WaveSurfer
+  //       }
+  //     };
+  //     reader.readAsDataURL(file);
+  //   }
+  // };
 
   // Function to handle audio file upload to the Spectrastem server
   const handleFileSubmit = async () => {
-    console.log("Uploading started");
     if (!uploadedFile) {
       setUploadStatus("No file selected for upload.");
       return;
     }
 
-    setLoading(true);
-
     const formData = new FormData();
-    formData.append("file", audioFile); // Add the file to the form data
-    formData.append("process_stems", String(true));
+    formData.append("file", uploadedFile); // Add the file to the form data
 
     try {
-      console.log("Sending tp server: " + formData.get("process_stems"));
-      const response = await axios.post(
-        `${API_BASE_URL}/api/upload-audio`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      setUploadStatus("Uploading...");
+      const response = await fetch("http://localhost:5000/api/upload-audio", {
+        method: "POST",
+        body: formData,
+      });
 
-      if (
-        response.status === 200 &&
-        response.data.message === "Processing completed successfully"
-      ) {
-        // Navigate to the results page with the response data
-        navigate("/results", { state: { data: response.data } });
-        setError(null);
+      if (response.ok) {
+        const result = await response.json(); // Get response from server
+        setUploadStatus("Upload successful!");
+        console.log("Server response:", result); // Handle the server response
       } else {
-        setError(response.data.error || "Unexpected response from the server.");
+        setUploadStatus("Upload failed.");
       }
-    } catch (err) {
-      setError("An error occurred during upload: " + err);
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      setUploadStatus("Error occurred during upload.");
+      console.error("Upload error:", error);
     }
   };
 
@@ -130,7 +126,7 @@ const Waveform: React.FC<WaveformPreview> = ({ audioFile }) => {
         }
       };
     }
-  }, [waveformRef, dispatch, userSubscription, audioFile]);
+  }, [waveformRef, dispatch, userSubscription]);
 
   const handlePlayPause = () => {
     if (wavesurfer.current) {
@@ -141,8 +137,9 @@ const Waveform: React.FC<WaveformPreview> = ({ audioFile }) => {
 
   return (
     <div>
-      {uploadStatus}
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {/* File upload input */}
+      {/* <input type="file" accept="audio/*" onChange={handleFileUpload} /> */}
+
       {/* Waveform display */}
       <div id="waveform" ref={waveformRef}></div>
 
@@ -150,9 +147,7 @@ const Waveform: React.FC<WaveformPreview> = ({ audioFile }) => {
       <button onClick={handlePlayPause}>{isPlaying ? "Pause" : "Play"}</button>
 
       {/* Upload button */}
-      <button onClick={handleFileSubmit} disabled={loading || !audioFile}>
-        {loading ? "Uploading..." : "Upload"}
-      </button>
+      <button onClick={handleFileSubmit}>Upload to Spectrastem Server</button>
 
       {/* Upload status */}
       <p>{uploadStatus}</p>

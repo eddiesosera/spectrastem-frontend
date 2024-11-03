@@ -125,7 +125,7 @@ const FileUpload = () => {
         getUploadParams={getUploadParams}
         onChangeStatus={handleChangeStatus}
         onSubmit={handleSubmit}
-        accept="image/*,audio/*,video/*"
+        accept="audio/*"
       />
       {error && <p style={{ color: "red" }}>{error}</p>}
       {isLoading && (

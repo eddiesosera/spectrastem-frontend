@@ -26,7 +26,7 @@ const AppRoutes: React.FC = () => {
   // const [trackName, setTrackName] = useState<string | null>(null);
 
   return (
-    <div>
+    <div className="flex flex-col h-full">
       <Navbar />
       <Routes>
         {/* Public Routes */}
