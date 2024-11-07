@@ -1,163 +1,87 @@
-import React, { useEffect, useState } from "react";
-import Waveform from "../../components/Input/Waveform/waveform";
-import { useSelector } from "react-redux";
-import { RootState } from "../../redux/store";
-import FileUpload from "./../../components/Input/FileUpload";
-import Dropzone, {
-  IDropzoneProps,
-  ILayoutProps,
-  IPreviewProps,
-} from "react-dropzone-uploader";
-import { ArrowUpIcon } from "@heroicons/react/24/solid";
-import { io } from "socket.io-client";
-import { steps } from "../Processing/steps";
+import React, { useCallback, useState } from "react";
+import { useDropzone } from "react-dropzone";
+import { ArrowUpTrayIcon } from "@heroicons/react/24/solid";
 import Wizard from "../../components/Feedback/Wizard/wizard";
+import { steps } from "../Processing/steps";
+import { useNavigate } from "react-router-dom";
 
 const Home: React.FC = () => {
-  const userSubscription = useSelector(
-    (state: RootState) => state.user.userDetails.accountType
-  );
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const navigate = useNavigate();
 
-  // Access the environment variable using import.meta.env.VITE_API_BASE_URL
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
-  const formatBytes = (bytes: number) => `${(bytes / 1024)?.toFixed(2)} KB`;
-  const formatDuration = (duration: number) =>
-    `${duration?.toFixed(2)} seconds`;
-
-  const getUploadParams: IDropzoneProps["getUploadParams"] = () => {
-    return { url: `${API_BASE_URL}/api/upload-audio` };
-  };
-
-  const handleChangeStatus: IDropzoneProps["onChangeStatus"] = (
-    { meta, file },
-    status
-  ) => {
-    console.log(status, meta, file);
-    setUploadedFile(file);
-  };
-
-  const handleSubmit: IDropzoneProps["onSubmit"] = (files, allFiles) => {
-    console.log(files.map((f) => f.meta));
-    allFiles.forEach((f) => f.remove());
-  };
-
-  // Custom Input Component
-  const CustomInputContent: React.FC = () => (
-    <div className="flex flex-col g-4 justify-centre wrap">
-      <div>
-        <ArrowUpIcon className="size-6" />
-      </div>
-      <p>Upload Track</p>
-      <p>Only mp3, wav, flac, ogg, aac</p>
-    </div>
-  );
-
-  // Custom Layout Component
-  const CustomLayout: React.FC<ILayoutProps> = ({
-    input,
-    previews,
-    dropzoneProps,
-  }) => (
-    <div
-      {...dropzoneProps}
-      className="flex-grow flex"
-      style={{
-        border: "1px dashed #DDDCE5",
-        padding: "20px",
-        background: "linear-gradient(90deg, #C7C0FF 0%, #FFE8F7 100%)",
-        overflow: "hidden",
-      }}
-      key={1}
-    >
-      {previews}
-      {!uploadedFile && <div key={1}>{input}</div>}
-    </div>
-  );
-
-  const Preview: React.FC<IPreviewProps> = ({
-    className,
-    meta: {
-      name = "",
-      percent = 0,
-      size = 0,
-      previewUrl,
-      status,
-      duration,
-      validationError,
-    },
-    canRemove,
-    remove,
-    file,
-    extra: { minSizeBytes },
-  }) => {
-    const title = `${name || "?"}, ${formatBytes(size)}, ${formatDuration(
-      duration
-    )}`;
-
-    return (
-      <div key={1} className="flex flex-grow">
-        <Wizard steps={steps} />
-      </div>
-      // <div className={className}>
-      //   <Waveform audioFile={uploadedFile} />
-      //   <span>{title}</span>
-      //   {status === "error_file_size" && (
-      //     <span>{size < minSizeBytes ? "File too small" : "File too big"}</span>
-      //   )}
-      //   {status === "error_validation" && (
-      //     <span>{String(validationError)}</span>
-      //   )}
-      //   {canRemove && <button onClick={remove}>Remove</button>}
-      // </div>
-    );
-  };
-
-  useEffect(() => {}, [uploadedFile]);
-
-  useEffect(() => {
-    // Initialize socket without namespace
-    const socket = io(API_BASE_URL, {
-      transports: ["websocket", "polling"],
-    });
-
-    socket.on("connect", () => {
-      console.log("Connected to server");
-    });
-
-    socket.on("status", (data: any) => {
-      console.log(`[${data.level.toUpperCase()}] ${data.message}`);
-    });
-
-    // Handle disconnection
-    socket.on("disconnect", () => {
-      console.log("Disconnected from server");
-    });
-
-    // Clean up on component unmount
-    return () => {
-      socket.disconnect();
-    };
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    console.log("Files dropped:", acceptedFiles);
+    setUploadedFile(acceptedFiles[0]);
+    navigate("/process/select-segment");
   }, []);
 
+  const { getRootProps, getInputProps, isDragActive, open } = useDropzone({
+    onDrop,
+    accept: "audio/*",
+    multiple: false,
+    // Disable the dropzone when a file is uploaded
+    disabled: uploadedFile !== null,
+  });
+
   return (
-    <div className="flex flex-grow flex-col h-full">
-      <Dropzone
-        getUploadParams={getUploadParams}
-        onChangeStatus={handleChangeStatus}
-        onSubmit={handleSubmit}
-        accept="audio/*"
-        inputContent={<CustomInputContent />}
-        PreviewComponent={Preview}
-        LayoutComponent={CustomLayout}
-        key={1}
-        multiple={false}
-        maxFiles={1}
-      />
-      {/* Account type: {userSubscription} */}
+    <div className="flex flex-grow flex-col h-full dropzone-wrapper">
+      {!uploadedFile ? (
+        // Render the dropzone when there's no uploaded file
+        <div
+          {...getRootProps()}
+          className="flex-grow flex items-center"
+          style={{
+            // border: "1px dashed #DDDCE5",
+            padding: "20px",
+            background: isDragActive
+              ? "linear-gradient(90deg, #DAF7F2 0%, #FCFFE8 100%)"
+              : "linear-gradient(90deg, #C7C0FF 0%, #FFE8F7 100%)",
+            overflow: "hidden",
+          }}
+        >
+          <input {...getInputProps()} />
+          <CustomInputContent />
+        </div>
+      ) : (
+        // Render the Wizard component without the dropzone's event handlers
+        <div
+          className="flex-grow flex items-center"
+          style={{
+            border: "1px dashed #DDDCE5",
+            padding: "20px",
+            background: "linear-gradient(90deg, #C7C0FF 0%, #FFE8F7 100%)",
+            overflow: "hidden",
+          }}
+        >
+          <Wizard steps={steps} />
+        </div>
+      )}
     </div>
   );
 };
+
+const CustomInputContent: React.FC = () => (
+  <div className="flex flex-col g-4 justify-center wrap gap-5 items-center w-full cursor-pointer">
+    <div className="rounded-full bg-white p-5 w-fit">
+      <ArrowUpTrayIcon
+        fontWeight={700}
+        className="size-6 text-[#14181F] font-extrabold"
+      />
+    </div>
+    <div className="flex flex-col gap-5 items-center">
+      <p className="text-2xl size-6 font-bold text-[#14181F] w-fit">
+        Upload Audio to Start
+      </p>
+      <div className="flex flex-col gap-[0.25px] items-center">
+        <p className="text-sm size-6 text-[#14181F] w-fit">
+          Drag 'n Drop or Click to select files.
+        </p>
+        <p className="text-sm size-6 text-[#69677F] w-fit">
+          Only mp3, wav, flac, ogg, aac
+        </p>
+      </div>
+    </div>
+  </div>
+);
 
 export default Home;

@@ -12,12 +12,13 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
 
   // Redirect to login if not authenticated
   useEffect(() => {
-    if (!isAuthenticated) {
-      navigate("/auth/login");
-    }
+    // if (!isAuthenticated) {
+    //   navigate("/auth/login");
+    // }
   }, [isAuthenticated, navigate]);
 
-  return isAuthenticated ? children : null; // Return null while redirecting
+  // return isAuthenticated ? children : null; // Return null while redirecting
+  return children;
 };
 
 export default PrivateRoute;

@@ -9,19 +9,24 @@ const initialState: WizardState = {
   currentIndex: 0,
 };
 
-export const wizardReducer = (
+const wizardReducer = (
   state = initialState,
   action: WizardActionTypes
-) => {
+): WizardState => {
   switch (action.type) {
     case NEXT_STEP:
-      return { ...state, currentIndex: state.currentIndex + 1 };
+      return {
+        ...state,
+        currentIndex: state.currentIndex + 1,
+      };
     case PREVIOUS_STEP:
       return {
         ...state,
-        currentIndex: state.currentIndex > 0 ? state.currentIndex - 1 : 0,
+        currentIndex: state.currentIndex - 1,
       };
     default:
       return state;
   }
 };
+
+export default wizardReducer;

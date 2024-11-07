@@ -21,6 +21,8 @@ import StatusPage from "../../pages/Processing/StatusPage";
 import ResultsPage from "../../pages/Processing/StemsResults";
 // import FileUpload from "./../../components/Input/FileUpload";
 import Navbar from "../../components/Navbar/navbar";
+import ProcessLoader from "../../pages/Processing/ProcessLoader";
+// import { ProcessLoader } from "./../../pages/Processing/ProcessLoader";
 
 const AppRoutes: React.FC = () => {
   // const [trackName, setTrackName] = useState<string | null>(null);
@@ -109,6 +111,14 @@ const AppRoutes: React.FC = () => {
           element={
             <PrivateRoute>
               <SelectSegment />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/process/loading"
+          element={
+            <PrivateRoute>
+              <ProcessLoader />
             </PrivateRoute>
           }
         />

@@ -1,6 +1,21 @@
+import React from "react";
+import Wizard from "../../components/Feedback/Wizard/wizard";
+import { steps } from "./steps";
+
+const ProcessLoader: React.FC = () => {
+  return (
+    <div className="flex-grow flex items-center p4">
+      <Wizard steps={steps} />
+    </div>
+  );
+};
+
+export default ProcessLoader;
+
 // import React, { useEffect, useState } from "react";
 // import axios from "axios";
 // import StemPlayer from "../../components/Input/StemPlayer";
+// import { ProcessLoader } from './ProcessLoader';
 
 // export const ProcessLoader: React.FC = () => {
 //   return (

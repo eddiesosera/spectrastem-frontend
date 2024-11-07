@@ -10,6 +10,7 @@ export interface IWizardStepProps {
 
 export interface IWizardProps {
   steps: IWizardStepProps[];
+  audioFile: File | null;
   onStepChange?: (currentIndex: number) => void;
 }
 
