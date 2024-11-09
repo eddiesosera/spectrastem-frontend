@@ -34,21 +34,11 @@ const SelectSegment: React.FC<SelectSegmentProps> = (props) => {
     </div>
   );
 
-  // Optional custom footer
-  const customFooter = (
-    <div className="custom-footer">
-      <button onClick={props.handlePrevious}>Back</button>
-      <button onClick={props.handleNext}>Proceed</button>
-    </div>
-  );
-
   return (
-    <Wizard header={customHeader} footer={customFooter}>
+    <Wizard>
       <div>
-        {/* Step-specific content */}
-        <p>Select the audio segment to process.</p>
+        {/* <p>Select the audio segment to process.</p> */}
         <Waveform audioFile={uploadedFile} />
-        {/* Use props.handleNext and props.handlePrevious if needed */}
       </div>
     </Wizard>
   );

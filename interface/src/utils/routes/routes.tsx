@@ -14,11 +14,8 @@ import Home from "../../pages/Home/Home";
 import Dashboard from "../../pages/Dashboard/Dashboard";
 import AboutUs from "../../pages/About/AboutUs";
 import NotFound from "../../pages/Error/NotFound";
-import ExtractedMidi from "../../pages/Processing/ExtractedMidi";
-import ExtractedStems from "../../pages/Processing/ExtractedStems";
 import SelectSegment from "../../pages/Processing/SelectSegment";
-import StatusPage from "../../pages/Processing/StatusPage";
-import ResultsPage from "../../pages/Processing/StemsResults";
+import ResultsPage from "../../pages/Processing/ResultsPages/ResultsPage";
 // import FileUpload from "./../../components/Input/FileUpload";
 import Navbar from "../../components/Navbar/navbar";
 import ProcessLoader from "../../pages/Processing/ProcessLoader";
@@ -115,7 +112,7 @@ const AppRoutes: React.FC = () => {
           }
         />
         <Route
-          path="/process/loading"
+          path="/process/processing-audio"
           element={
             <PrivateRoute>
               <ProcessLoader />
@@ -123,25 +120,13 @@ const AppRoutes: React.FC = () => {
           }
         />
         <Route
-          path="/result/extracted-midi"
+          path="/process/results/:method"
           element={
             <PrivateRoute>
-              <ExtractedMidi />
+              <ResultsPage />
             </PrivateRoute>
           }
         />
-        <Route
-          path="/result/extracted-stems"
-          element={
-            <PrivateRoute>
-              <ExtractedStems />
-            </PrivateRoute>
-          }
-        />
-
-        {/* <Route path="/upload" element={<FileUpload />} /> */}
-        <Route path="/status/:trackName" element={<StatusPage />} />
-        <Route path="/results" element={<ResultsPage />} />
       </Routes>
     </div>
   );

@@ -1,9 +1,7 @@
-// File: frontend/pages/Processing/ResultsPage.tsx
-
 import React from "react";
 import { useLocation } from "react-router-dom";
 
-const ResultsPage: React.FC = () => {
+const ExtractedStems: React.FC = () => {
   const location = useLocation();
   const data = location.state?.data;
 
@@ -14,10 +12,10 @@ const ResultsPage: React.FC = () => {
   // Extract data
   const trackName = data.stems?.track_name || data.midi?.track_name;
   const stemsData = data.stems?.stems;
-  const midiData = data.midi?.midi_files;
 
   return (
     <div>
+      <h1>Extracted Stems</h1>
       <h2>Processing Completed for {trackName}</h2>
 
       {stemsData && (
@@ -36,23 +34,8 @@ const ResultsPage: React.FC = () => {
           </ul>
         </div>
       )}
-
-      {midiData && (
-        <div>
-          <h3>Generated MIDI Files:</h3>
-          <ul>
-            {Object.entries(midiData).map(([midiName, midiUrl]) => (
-              <li key={midiName}>
-                <a href={midiUrl as string} download>
-                  {midiName}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
     </div>
   );
 };
 
-export default ResultsPage;
+export default ExtractedStems;

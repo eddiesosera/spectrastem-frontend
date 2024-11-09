@@ -40,10 +40,10 @@ const Wizard: React.FC<WizardProps> = ({ children, header, footer }) => {
     steps,
     currentStepIndex,
   }) => (
-    <div className="wizard-progress-bar bg-gray-100 rounded-lg p-6 shadow-sm mb-8">
-      <div className="flex justify-between items-center">
+    <div className="wizard-progress-bar bg-white rounded-lg p-6 shadow-sm mb-8">
+      <div className="flex justify-between items-center w-full">
         {steps.slice(0, 3).map((step, index) => (
-          <div key={step.url} className="flex-1 flex items-center">
+          <div key={step.url} className="flex-1 flex items-center w-full">
             {/* Step Circle */}
             <div
               className={`w-8 h-8 flex items-center justify-center rounded-full ${
@@ -66,11 +66,11 @@ const Wizard: React.FC<WizardProps> = ({ children, header, footer }) => {
           </div>
         ))}
       </div>
-      <div className="flex justify-between mt-4">
+      <div className="flex justify-between mt-2 w-full">
         {steps.slice(0, 3).map((step, index) => (
           <div
             key={step.url}
-            className={`text-center text-sm font-semibold ${
+            className={`text-center text-xs font-semibold ${
               index === currentStepIndex ? "text-black" : "text-gray-500"
             }`}
           >
@@ -85,11 +85,12 @@ const Wizard: React.FC<WizardProps> = ({ children, header, footer }) => {
   const StepContent: React.FC<{ currentStep: any }> = ({ currentStep }) => (
     <div className="flex flex-col items-center">
       {/* Step Image */}
-      <img
+      {/* <img
         src={currentStep.image} // Ensure each step object has an `image` URL
         alt={currentStep.name}
         className="w-24 h-24 mb-4"
-      />
+      /> */}
+      {currentStep.img}
       {/* Step Title */}
       <h2 className="text-lg font-bold">{currentStep.name}</h2>
       {/* Step Description */}
@@ -121,14 +122,14 @@ const Wizard: React.FC<WizardProps> = ({ children, header, footer }) => {
   );
 
   return (
-    <div className="wizard flex flex-grow p-4 w-full h-full p-4">
-      <div className="wizard-inner flex rounded-lg shadow-lg gap-4 w-full h-full">
-        <div className="wizard-container flex flex-col flex-grow g-4 bg-white rounded-lg p-6 shadow-sm justify-between h-full">
+    <div className="wizard flex flex-grow p-4 w-full h-full p-4 bg-[#F5F4FB]">
+      <div className="wizard-inner flex gap-4 w-full h-full">
+        <div className="wizard-container flex flex-col flex-grow p-6 g-4 bg-white rounded-[1.25rem] border border-[#D2D2D2] justify-between h-full">
           {/* Header */}
           {header !== undefined ? header : defaultHeader}
 
           {/* Content */}
-          <div className="wizard-content flex flex-col flex-grow h-full p-6 justify-center">
+          <div className="wizard-content flex flex-col flex-grow h-full p-6 justify-center align-center">
             {React.cloneElement(children, {
               handleNext,
               handlePrevious,
@@ -142,7 +143,7 @@ const Wizard: React.FC<WizardProps> = ({ children, header, footer }) => {
         </div>
 
         {/* Sidebar with Progress Bar and Step Details */}
-        <div className="wizard-sidebar w-1/3 bg-white rounded-lg shadow-sm p-6">
+        <div className="wizard-sidebar w-1/3 bg-wizard-s-bg rounded-[1.25rem] border border-[#D2D2D2] p-6">
           <ProgressBar steps={steps} currentStepIndex={currentStepIndex} />
           <StepContent currentStep={steps[currentStepIndex]} />
         </div>
