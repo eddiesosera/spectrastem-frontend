@@ -16,10 +16,11 @@ const Waveform: React.FC<WaveformPreview> = ({ audioFile }) => {
   const waveformRef = useRef<HTMLDivElement>(null);
   const wavesurfer = useRef<WaveSurfer | null>(null);
   const dispatch = useDispatch();
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null); // Store the uploaded file
-  const [isPlaying, setIsPlaying] = useState(false); // Play/pause state
-  const [uploadStatus, setUploadStatus] = useState(""); // Status of upload
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState("");
   const [loading, setLoading] = useState<boolean>(false);
+  const [waveformReady, setWaveformReady] = useState<boolean>(false); // Track waveform readiness
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const userSubscription = useSelector(
@@ -27,29 +28,23 @@ const Waveform: React.FC<WaveformPreview> = ({ audioFile }) => {
   );
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-  // Function to handle audio file upload to the Spectrastem server
   const handleFileSubmit = async () => {
-    console.log("Uploading started");
     if (!uploadedFile) {
       setUploadStatus("No file selected for upload.");
       return;
     }
-
     setLoading(true);
 
     const formData = new FormData();
-    formData.append("file", audioFile); // Add the file to the form data
+    formData.append("file", audioFile);
     formData.append("process_stems", String(true));
 
     try {
-      console.log("Sending tp server: " + formData.get("process_stems"));
       const response = await axios.post(
         `${API_BASE_URL}/api/upload-audio`,
         formData,
         {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
+          headers: { "Content-Type": "multipart/form-data" },
         }
       );
 
@@ -57,7 +52,6 @@ const Waveform: React.FC<WaveformPreview> = ({ audioFile }) => {
         response.status === 200 &&
         response.data.message === "Processing completed successfully"
       ) {
-        // Navigate to the results page with the response data
         navigate("/results", { state: { data: response.data } });
         setError(null);
       } else {
@@ -76,13 +70,13 @@ const Waveform: React.FC<WaveformPreview> = ({ audioFile }) => {
       const reader = new FileReader();
       reader.onload = (e) => {
         if (wavesurfer.current && e.target?.result) {
-          wavesurfer.current.load(e.target.result as string); // Load audio file into WaveSurfer
+          wavesurfer.current.load(e.target.result as string);
+          setWaveformReady(false); // Set to false before loading to avoid premature display
         }
       };
       reader.readAsDataURL(audioFile);
     }
 
-    // Initialize Waveform
     if (waveformRef.current) {
       wavesurfer.current = WaveSurfer.create({
         container: waveformRef.current,
@@ -97,15 +91,14 @@ const Waveform: React.FC<WaveformPreview> = ({ audioFile }) => {
         plugins: [
           RegionsPlugin.create({
             regions: [],
-            dragSelection: {
-              slop: 5,
-            },
+            dragSelection: { slop: 5 },
           }),
         ],
       });
 
-      // Get duration of audio file
-      wavesurfer?.current?.on("ready", () => {
+      // Attach "ready" event handler
+      wavesurfer.current.once("ready", () => {
+        console.log("WaveSurfer 'ready' event fired."); // Debug log
         const duration = wavesurfer.current?.getDuration();
         let region;
         if (duration && duration <= 30) {
@@ -114,7 +107,7 @@ const Waveform: React.FC<WaveformPreview> = ({ audioFile }) => {
           region =
             userSubscription === "premium"
               ? { start: 0, end: duration }
-              : { start: 0, end: 30 }; // Limit to 30 seconds for non-premium users
+              : { start: 0, end: 30 };
         }
         wavesurfer.current?.addRegion({
           ...region,
@@ -122,7 +115,16 @@ const Waveform: React.FC<WaveformPreview> = ({ audioFile }) => {
           color: "rgba(59, 130, 246, 0.1)",
         });
         dispatch(setLoopRegion(region));
+        setWaveformReady(true); // Ensure waveformReady is updated here
       });
+
+      // Fallback: Set waveformReady to true after a delay if ready event doesn't fire
+      setTimeout(() => {
+        if (!waveformReady) {
+          console.log("Waveform load fallback triggered.");
+          setWaveformReady(true);
+        }
+      }, 3000); // 3 seconds fallback delay
 
       return () => {
         if (wavesurfer.current) {
@@ -130,7 +132,7 @@ const Waveform: React.FC<WaveformPreview> = ({ audioFile }) => {
         }
       };
     }
-  }, [waveformRef, dispatch, userSubscription, audioFile]);
+  }, [audioFile, dispatch, userSubscription]);
 
   const handlePlayPause = () => {
     if (wavesurfer.current) {
@@ -143,11 +145,26 @@ const Waveform: React.FC<WaveformPreview> = ({ audioFile }) => {
     <div>
       {uploadStatus}
       {error && <p style={{ color: "red" }}>{error}</p>}
+
+      {/* Loader */}
+      {!waveformReady && (
+        <div style={{ textAlign: "center", padding: "20px" }}>
+          <div className="loader"></div> {/* Add CSS for loader animation */}
+          <p>Loading waveform...</p>
+        </div>
+      )}
+
       {/* Waveform display */}
-      <div id="waveform" ref={waveformRef}></div>
+      <div
+        id="waveform"
+        ref={waveformRef}
+        style={{ display: waveformReady ? "block" : "none" }}
+      ></div>
 
       {/* Play/Pause button */}
-      <button onClick={handlePlayPause}>{isPlaying ? "Pause" : "Play"}</button>
+      <button onClick={handlePlayPause} disabled={!waveformReady}>
+        {isPlaying ? "Pause" : "Play"}
+      </button>
 
       {/* Upload button */}
       <button onClick={handleFileSubmit} disabled={loading || !audioFile}>
