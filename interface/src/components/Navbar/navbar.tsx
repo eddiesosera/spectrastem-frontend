@@ -4,11 +4,13 @@ import Dropdown from "../Dropdown/dropdown";
 import DropdownManager from "./../Dropdown/dropdown_manager";
 import { desktopItems, profileDropdownItems } from "./nav_items";
 import { Bars3BottomRightIcon } from "@heroicons/react/24/solid";
+import { useNavigate } from "react-router-dom";
 
 const Navbar: React.FC = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const dropdownManager = DropdownManager.getInstance();
   const [activeDropdownId, setActiveDropdownId] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleDropdownChange = (id: string | null) => {
@@ -70,7 +72,10 @@ const Navbar: React.FC = () => {
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-16">
           {/* Left Section: Logo */}
-          <div className="flex items-center">
+          <div
+            className="flex items-center cursor-pointer"
+            onClick={() => navigate("/")}
+          >
             <img src={Logo} alt="SpectraStem Logo" className="h-6 mr-2" />
           </div>
 

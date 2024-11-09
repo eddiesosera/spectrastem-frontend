@@ -7,6 +7,15 @@ import { setLoopRegion } from "../../../redux/slices/audio.slice";
 import "./waveform.css";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { GooSpinner } from "react-spinners-kit";
+import {
+  ArrowPathRoundedSquareIcon,
+  PauseIcon,
+  PlayIcon,
+  StopIcon,
+} from "@heroicons/react/24/solid";
+import { RiSpeedUpFill } from "react-icons/ri";
+import Dropdown from "../../Dropdown/dropdown";
 
 interface WaveformPreview {
   audioFile: any;
@@ -87,7 +96,7 @@ const Waveform: React.FC<WaveformPreview> = ({ audioFile }) => {
         barWidth: 3,
         barGap: 1,
         barRadius: 30,
-        height: 200,
+        height: 100,
         plugins: [
           RegionsPlugin.create({
             regions: [],
@@ -141,15 +150,30 @@ const Waveform: React.FC<WaveformPreview> = ({ audioFile }) => {
     }
   };
 
+  const speedOptions = [
+    {
+      label: "x 0.5",
+      onClick: () => console.log("Speed is 0.5"),
+    },
+    {
+      label: "x 1",
+      onClick: () => console.log("Speed is 1"),
+    },
+    {
+      label: "x 1.5",
+      onClick: () => console.log("Speed is 1"),
+    },
+  ];
+
   return (
-    <div>
-      {uploadStatus}
+    <div className="flex flex-col flex-grow gap-8 w-full h-full items-center justify-center">
       {error && <p style={{ color: "red" }}>{error}</p>}
 
       {/* Loader */}
       {!waveformReady && (
-        <div style={{ textAlign: "center", padding: "20px" }}>
-          <div className="loader"></div> {/* Add CSS for loader animation */}
+        <div className="flex flex-col items-center justify-center">
+          {/* <div className="loader"></div> Add CSS for loader animation */}
+          <GooSpinner size={30} color="#534BAF" loading={!waveformReady} />
           <p>Loading waveform...</p>
         </div>
       )}
@@ -161,18 +185,46 @@ const Waveform: React.FC<WaveformPreview> = ({ audioFile }) => {
         style={{ display: waveformReady ? "block" : "none" }}
       ></div>
 
-      {/* Play/Pause button */}
-      <button onClick={handlePlayPause} disabled={!waveformReady}>
-        {isPlaying ? "Pause" : "Play"}
-      </button>
+      <div className="waveform-controls flex flex-row items-center justify-center gap-2">
+        <div className="">
+          {/* Play/Pause button */}
+          {waveformReady && (
+            <div onClick={handlePlayPause} disabled={!waveformReady}>
+              {isPlaying ? (
+                <PauseIcon className="size-6" />
+              ) : (
+                <PlayIcon className="size-6" />
+              )}
+            </div>
+          )}
 
-      {/* Upload button */}
-      <button onClick={handleFileSubmit} disabled={loading || !audioFile}>
-        {loading ? "Uploading..." : "Upload"}
-      </button>
+          {/* Stop/Restart button */}
+          {waveformReady && (
+            <div onClick={handlePlayPause} disabled={!waveformReady}>
+              <StopIcon className="size-6" />
+            </div>
+          )}
+        </div>
 
-      {/* Upload status */}
-      <p>{uploadStatus}</p>
+        {waveformReady && (
+          <div onClick={handlePlayPause} disabled={!waveformReady}>
+            <ArrowPathRoundedSquareIcon className="size-6" />
+          </div>
+        )}
+
+        {waveformReady && (
+          <div>
+            <Dropdown
+              id="waveform-speed"
+              header={<RiSpeedUpFill className="size-6" />}
+              items={speedOptions}
+            />
+          </div>
+        )}
+
+        {/* Upload status */}
+        <p>{uploadStatus}</p>
+      </div>
     </div>
   );
 };
