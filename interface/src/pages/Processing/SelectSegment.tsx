@@ -1,6 +1,9 @@
 // SelectSegment.tsx
-import React from "react";
+import React, { useContext, useEffect } from "react";
 import Wizard from "../../components/Feedback/Wizard/wizard";
+import Waveform from "../../components/Input/Waveform/waveform";
+import { useNavigate } from "react-router-dom";
+import { FileContext } from "../../context/file.context";
 
 interface SelectSegmentProps {
   handleNext: () => void;
@@ -10,7 +13,18 @@ interface SelectSegmentProps {
 }
 
 const SelectSegment: React.FC<SelectSegmentProps> = (props) => {
-  // Component logic and state
+  const { uploadedFile } = useContext(FileContext);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!uploadedFile) {
+      navigate("/");
+    }
+  }, [uploadedFile, navigate]);
+
+  if (!uploadedFile) {
+    return null;
+  }
 
   // Optional custom header
   const customHeader = (
@@ -33,6 +47,7 @@ const SelectSegment: React.FC<SelectSegmentProps> = (props) => {
       <div>
         {/* Step-specific content */}
         <p>Select the audio segment to process.</p>
+        <Waveform audioFile={uploadedFile} />
         {/* Use props.handleNext and props.handlePrevious if needed */}
       </div>
     </Wizard>

@@ -5,17 +5,20 @@ import ErrorBoundary from "./pages/Error/ErrorBoundary";
 import AppRoutes from "./utils/routes/routes";
 import { Provider } from "react-redux";
 import store from "./redux/store";
+import { FileProvider } from "./context/file.context";
 
 const App: React.FC = () => {
   return (
     <Router>
-      <AuthProvider>
-        <ErrorBoundary>
-          <Provider store={store}>
-            <AppRoutes />
-          </Provider>
-        </ErrorBoundary>
-      </AuthProvider>
+      <ErrorBoundary>
+        <AuthProvider>
+          <FileProvider>
+            <Provider store={store}>
+              <AppRoutes />
+            </Provider>
+          </FileProvider>
+        </AuthProvider>
+      </ErrorBoundary>
     </Router>
   );
 };

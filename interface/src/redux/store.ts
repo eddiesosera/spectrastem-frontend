@@ -3,7 +3,6 @@ import playbackReducer from "./slices/playback.slice";
 import userReducer from "./slices/user.slice";
 import audioReducer from "./slices/audio.slice";
 import wizardReducer from "./slices/wizard.slice";
-// import { wizardReducer } from "./slices/wizard.slice";
 
 const store = configureStore({
   reducer: {
