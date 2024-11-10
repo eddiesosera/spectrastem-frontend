@@ -10,5 +10,5 @@
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" }
   ],
-  "include": ["src", "src/wavesurfer.d.ts"]
+  "include": ["src", "src/types/wavesurfer.d.ts", "src/types"]
 }

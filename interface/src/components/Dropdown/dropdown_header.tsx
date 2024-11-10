@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { ReactNode, useEffect, useState } from "react";
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/solid";
 import DropdownManager from "./dropdown_manager";
 // import DropdownManager from "./DropdownManager";
 
 interface DropdownHeaderProps {
-  label: string;
+  label: string | ReactNode;
   dropdownId: string;
 }
 

@@ -1,18 +1,18 @@
-// src/components/Input/Waveform/waveform.tsx
-
 import React, { useEffect, useRef, useState } from "react";
 import WaveSurfer from "wavesurfer.js";
-import RegionsPlugin from "wavesurfer.js/dist/plugins/regions.esm.js"; // Correct import for v6.x
+import RegionsPlugin from "wavesurfer.js/dist/plugins/regions.esm.js";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../redux/store";
 import { setLoopRegion } from "../../../redux/slices/audio.slice";
-import "./waveform.css"; // Ensure your styles are updated accordingly
+import "./waveform.css";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import { GooSpinner } from "react-spinners-kit";
 import {
   ArrowPathRoundedSquareIcon,
   PauseIcon,
   PlayIcon,
+  ScissorsIcon,
   StopIcon,
 } from "@heroicons/react/24/solid";
 import { RiSpeedUpFill } from "react-icons/ri";
@@ -22,150 +22,140 @@ import { IoCrop } from "react-icons/io5";
 import { Button } from "../../Button/button";
 
 interface WaveformPreview {
-  audioFile: File | null;
+  audioFile: any;
 }
 
 const Waveform: React.FC<WaveformPreview> = ({ audioFile }) => {
   const waveformRef = useRef<HTMLDivElement>(null);
-  const wavesurferRef = useRef<WaveSurfer | null>(null);
+  const wavesurfer = useRef<WaveSurfer | null>(null);
   const dispatch = useDispatch();
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [waveformReady, setWaveformReady] = useState<boolean>(false);
+  const [uploadStatus, setUploadStatus] = useState("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [waveformReady, setWaveformReady] = useState<boolean>(false); // Track waveform readiness
   const [error, setError] = useState<string | null>(null);
   const [isLooping, setIsLooping] = useState<boolean>(false);
   const [currentSpeed, setCurrentSpeed] = useState<number>(1);
-  const [loopRegion, setLoopRegion] = useState<any>(null); // Track the loop region
+  const [isCropHover, setIsCropHover] = useState<boolean>(false);
   const navigate = useNavigate();
+  const [segmentDuration, setSegmentDuration] = useState<number>(30); //30 second segment by default
   const userSubscription = useSelector(
     (state: RootState) => state.user.userDetails.accountType
   );
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+  const handleFileSubmit = async () => {
+    if (!uploadedFile) {
+      setUploadStatus("No file selected for upload.");
+      return;
+    }
+    setLoading(true);
+
+    const formData = new FormData();
+    formData.append("file", audioFile);
+    formData.append("process_stems", String(true));
+
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}/api/upload-audio`,
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+
+      if (
+        response.status === 200 &&
+        response.data.message === "Processing completed successfully"
+      ) {
+        navigate("/results", { state: { data: response.data } });
+        setError(null);
+      } else {
+        setError(response.data.error || "Unexpected response from the server.");
+      }
+    } catch (err) {
+      setError("An error occurred during upload: " + err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    if (!waveformRef.current) return;
-
-    // Initialize WaveSurfer with Regions Plugin
-    wavesurferRef.current = WaveSurfer.create({
-      container: waveformRef.current,
-      waveColor: "#cbc6d7",
-      progressColor: "#57398e",
-      cursorColor: "#212121",
-      cursorWidth: 2,
-      barWidth: 3,
-      barGap: 1,
-      barRadius: 30,
-      height: 100,
-      plugins: [
-        RegionsPlugin.create({
-          regions: [],
-          dragSelection: { slop: 5 },
-        }),
-      ],
-    });
-
-    const wavesurfer = wavesurferRef.current;
-
-    // Load audio file
     if (audioFile) {
+      setUploadedFile(audioFile);
       const reader = new FileReader();
       reader.onload = (e) => {
-        if (e.target?.result && wavesurfer) {
-          wavesurfer.load(e.target.result as string);
+        if (wavesurfer.current && e.target?.result) {
+          wavesurfer.current.load(e.target.result as string);
+          setWaveformReady(false); // Set to false before loading to avoid premature display
         }
-      };
-      reader.onerror = (error) => {
-        console.error("Error reading audio file:", error);
-        setError("Failed to load audio file.");
-        setWaveformReady(false);
       };
       reader.readAsDataURL(audioFile);
     }
 
-    // Event handler when WaveSurfer is ready
-    const handleReady = () => {
-      setWaveformReady(true);
-      const duration = wavesurfer.getDuration();
-
-      // Define region data based on subscription and duration
-      let regionData;
-      if (duration <= 30) {
-        regionData = { start: 0, end: duration };
-      } else {
-        regionData =
-          userSubscription === "premium"
-            ? { start: 0, end: duration }
-            : { start: 0, end: 30 };
-      }
-
-      // Add the looping region
-      const newRegion = wavesurfer.addRegion({
-        ...regionData,
-        loop: isLooping,
-        id: "loop-region",
-        color: "rgba(59, 130, 246, 0.5)",
-        drag: true,
-        resize: true,
+    if (waveformRef.current) {
+      wavesurfer.current = WaveSurfer.create({
+        container: waveformRef.current,
+        waveColor: "#cbc6d7",
+        progressColor: "#57398e",
+        cursorColor: "#212121",
+        cursorWidth: 2,
+        barWidth: 3,
+        barGap: 1,
+        barRadius: 30,
+        height: 100,
+        plugins: [
+          RegionsPlugin.create({
+            regions: [],
+            dragSelection: { slop: 5 },
+          }),
+        ],
       });
 
-      setLoopRegion(newRegion);
-      dispatch(setLoopRegion(regionData));
-    };
+      // Attach "ready" event handler
+      wavesurfer.current.once("ready", () => {
+        console.log("WaveSurfer 'ready' event fired."); // Debug log
+        const duration = wavesurfer.current?.getDuration();
+        let region;
+        if (duration && duration <= 30) {
+          region = { start: 0, end: duration };
+        } else {
+          region =
+            userSubscription === "premium"
+              ? { start: 0, end: duration }
+              : { start: 0, end: 30 };
+        }
+        wavesurfer.current?.addRegion({
+          ...region,
+          loop: true,
+          color: "rgba(59, 130, 246, 0.1)",
+        });
+        dispatch(setLoopRegion(region));
+        setWaveformReady(true); // Ensure waveformReady is updated here
+      });
 
-    // Event handler when a region is updated
-    const handleRegionUpdateEnd = (region: any) => {
-      if (region.id === "loop-region") {
-        dispatch(setLoopRegion({ start: region.start, end: region.end }));
-        console.log("Loop region updated:", region.start, region.end);
-      }
-    };
+      // Fallback: Set waveformReady to true after a delay if ready event doesn't fire
+      setTimeout(() => {
+        if (!waveformReady) {
+          console.log("Waveform load fallback triggered.");
+          setWaveformReady(true);
+        }
+      }, 3000); // 3 seconds fallback delay
 
-    // Event handler when playback leaves a region
-    const handleRegionOut = (region: any) => {
-      if (region.id === "loop-region" && isLooping) {
-        console.log("Looping region:", region.id);
-        region.play();
-      }
-    };
-
-    // Attach event listeners
-    wavesurfer.on("ready", handleReady);
-    wavesurfer.on("region-update-end", handleRegionUpdateEnd);
-    wavesurfer.on("region-out", handleRegionOut);
-
-    // Cleanup on unmount
-    return () => {
-      wavesurfer.un("ready", handleReady);
-      wavesurfer.un("region-update-end", handleRegionUpdateEnd);
-      wavesurfer.un("region-out", handleRegionOut);
-      wavesurfer.destroy();
-    };
-  }, [audioFile, dispatch, isLooping, userSubscription]);
-
-  // Update playback rate when currentSpeed changes
-  useEffect(() => {
-    if (wavesurferRef.current) {
-      wavesurferRef.current.setPlaybackRate(currentSpeed);
+      return () => {
+        if (wavesurfer.current) {
+          wavesurfer.current.destroy();
+        }
+      };
     }
-  }, [currentSpeed]);
-
-  // Update looping when isLooping changes
-  useEffect(() => {
-    if (loopRegion) {
-      loopRegion.update({ loop: isLooping });
-      console.log("Looping updated:", isLooping);
-    }
-  }, [isLooping, loopRegion]);
+  }, [audioFile, dispatch, userSubscription]);
 
   const handlePlayPause = () => {
-    if (wavesurferRef.current) {
-      wavesurferRef.current.playPause();
+    if (wavesurfer.current) {
+      wavesurfer.current.playPause();
       setIsPlaying(!isPlaying);
-    }
-  };
-
-  const handleStop = () => {
-    if (wavesurferRef.current) {
-      wavesurferRef.current.stop();
-      setIsPlaying(false);
+      console.log(audioFile);
     }
   };
 
@@ -188,8 +178,7 @@ const Waveform: React.FC<WaveformPreview> = ({ audioFile }) => {
   ];
 
   const cropAudio = () => {
-    // Implement cropping functionality
-    alert("Crop functionality is not implemented yet.");
+    // Crops audio to selected segment and replaces the audio file in the audio file state in the global file context which should trigger a re-render.
   };
 
   return (
@@ -205,13 +194,12 @@ const Waveform: React.FC<WaveformPreview> = ({ audioFile }) => {
             <GooSpinner size={30} color="#534BAF" loading={!waveformReady} />
             <p className="text-base">Loading audio...</p>
           </div>
-          <Button type="danger" onClick={() => alert("Cropping audio")}>
+          <Button type="danger" onClick={() => alert("cropping audio")}>
             Cancel
           </Button>
         </div>
       )}
 
-      {/* Waveform */}
       <div
         className="w-full h-fit p-2 py-4 border rounded-lg bg-[#FAFAFA]"
         style={{ display: waveformReady ? "block" : "none" }}
@@ -219,15 +207,15 @@ const Waveform: React.FC<WaveformPreview> = ({ audioFile }) => {
         <div
           id="waveform"
           ref={waveformRef}
-          style={{ width: "100%", height: "128px" }}
+          style={{ display: waveformReady ? "block" : "none" }}
         ></div>
       </div>
 
-      {/* Controls */}
       <div className="waveform-controls flex flex-row items-center justify-center gap-8">
         {waveformReady && (
           <div className="flex flex-row gap-2 border p-2 px-4 rounded-full">
             {/* Play/Pause button */}
+
             <div onClick={handlePlayPause}>
               {isPlaying ? (
                 <PauseIcon className="size-6 cursor-pointer" />
@@ -237,9 +225,11 @@ const Waveform: React.FC<WaveformPreview> = ({ audioFile }) => {
             </div>
 
             {/* Stop/Restart button */}
-            <div onClick={handleStop}>
-              <StopIcon className="size-6 cursor-pointer" />
-            </div>
+            {waveformReady && (
+              <div onClick={handlePlayPause}>
+                <StopIcon className="size-6 cursor-pointer" />
+              </div>
+            )}
           </div>
         )}
 
@@ -267,11 +257,7 @@ const Waveform: React.FC<WaveformPreview> = ({ audioFile }) => {
           {waveformReady && (
             <div
               className={`flex flex-row items-center justify-center gap-1 radius p-2 rounded-md cursor-pointer hover:border-[#DDDDDD]
-                  ${
-                    isLooping
-                      ? "border border-[#AAAAAA]"
-                      : "border border-white"
-                  }`}
+            ${isLooping ? "border border-[#AAAAAA]" : "border border-white"}`}
               onClick={() => setIsLooping(!isLooping)}
             >
               <ArrowPathRoundedSquareIcon className="size-6 cursor-pointer" />
@@ -280,12 +266,15 @@ const Waveform: React.FC<WaveformPreview> = ({ audioFile }) => {
           )}
 
           {waveformReady && (
-            <Button type="outline" onClick={cropAudio}>
+            <Button type="outline" onClick={() => cropAudio()}>
               <IoCrop className="size-6 cursor-pointer" />{" "}
               <div className="text-xs">Crop</div>
             </Button>
           )}
         </div>
+
+        {/* Upload status */}
+        <p>{uploadStatus}</p>
       </div>
     </div>
   );
