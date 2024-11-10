@@ -200,12 +200,12 @@ const Waveform: React.FC<WaveformPreview> = ({ audioFile }) => {
 
       {/* Loader */}
       {!waveformReady && (
-        <div className="flex flex-col items-center justify-center gap-8">
+        <div className="flex flex-col items-center justify-center gap-8 select-none">
           <div className="flex flex-col items-center justify-center">
             <GooSpinner size={30} color="#534BAF" loading={!waveformReady} />
             <p className="text-base">Loading audio...</p>
           </div>
-          <Button type="danger" onClick={() => alert("Cropping audio")}>
+          <Button type="danger" onClick={() => navigate("/")}>
             Cancel
           </Button>
         </div>
@@ -219,7 +219,7 @@ const Waveform: React.FC<WaveformPreview> = ({ audioFile }) => {
         <div
           id="waveform"
           ref={waveformRef}
-          style={{ width: "100%", height: "128px" }}
+          style={{ width: "100%", height: "100px" }}
         ></div>
       </div>
 

@@ -1,32 +1,38 @@
-// src/services/serverApi.ts
+// audioAPI.ts
 import axios from "axios";
 import { MidiResponse, StemsResponse } from "../interface/engine_responses";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-const API_BASE_URL = process.env.API_BASE_URL;
-console.log(API_BASE_URL);
-
-export const extractStems = async (audioBlob: Blob): Promise<StemsResponse> => {
+// Unified API request for file processing
+export const uploadAndProcessFile = async (
+  audioBlob: Blob,
+  options: {
+    generateMIDI: boolean;
+    processStems: boolean;
+    stemsType: "all" | "vocals_instrumentals";
+  }
+): Promise<{ status: string; results?: MidiResponse | StemsResponse }> => {
   const formData = new FormData();
-  formData.append("audio", audioBlob);
+  formData.append("file", audioBlob);
+  formData.append("generate_midi", options.generateMIDI.toString());
+  formData.append("process_stems", options.processStems.toString());
+  formData.append("stems_type", options.stemsType);
 
-  const response = await axios.post(`${API_BASE_URL}/extract-stems`, formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
-
-  return response.data;
-};
-
-export const generateMIDI = async (audioBlob: Blob): Promise<MidiResponse> => {
-  const formData = new FormData();
-  formData.append("audio", audioBlob);
-
-  const response = await axios.post(`${API_BASE_URL}/generate-midi`, formData, {
-    headers: {
-      "Content-Type": "multipart/form-data",
-    },
-  });
-
-  return response.data;
+  try {
+    const response = await axios.post(
+      `${API_BASE_URL}/api/upload-audio`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    console.error("Error during file processing:", error);
+    throw new Error(
+      error.response?.data?.message || "An unexpected error occurred."
+    );
+  }
 };

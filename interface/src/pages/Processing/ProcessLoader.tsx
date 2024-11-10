@@ -1,42 +1,57 @@
-import React, { useEffect, useState } from "react";
-import Wizard from "../../components/Feedback/Wizard/wizard";
-import {
-  CombSpinner,
-  CubeSpinner,
-  DominoSpinner,
-  JellyfishSpinner,
-  WaveSpinner,
-} from "react-spinners-kit";
+// ProcessLoader.tsx
+import React, { useEffect, useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import { FileContext } from "../../context/file.context";
+import { WaveSpinner } from "react-spinners-kit";
+import { Button } from "../../components/Button/button";
 
 const ProcessLoader: React.FC = () => {
-  const [loading, setLoading] = useState<boolean>(true);
-  const [progressPercent, setProgressPercent] = useState<number>(0);
+  const { uploadStatus, error, setUploadStatus } = useContext(FileContext);
+  const navigate = useNavigate();
   const [loaderColour, setLoaderColour] = useState<string>("#534BAF");
-  const colorArray = ["#2A9D8F", "#372BBD", "#BA6CDF", "#F333FF"];
-  const [colourIndex, setColourIndex] = useState<number>(0);
-  const interval = 3000;
 
   useEffect(() => {
-    setInterval(() => {
-      setLoaderColour(colorArray[colourIndex]);
-      setColourIndex((colourIndex + 1) % colorArray.length);
-    }, interval);
-  }, [loaderColour]);
+    if (uploadStatus === "Completed") {
+      navigate("/process/results");
+    } else if (uploadStatus === "Error") {
+      // Stay on this page to show error message
+    }
+  }, [uploadStatus, navigate]);
+
+  const handleCancel = () => {
+    setUploadStatus("Idle");
+    navigate("/");
+  };
 
   return (
-    <Wizard>
-      <div className="flex flex-col flex-grow gap-8 w-full h-full items-center justify-center">
-        <WaveSpinner size={30} color={loaderColour} loading={loading} />
-
-        <div className="flex flex-col gap-1 items-center">
-          <div className="w-fit text-xl flex flex-row gap-1  items-center">
-            <div className="font-extrabold">{progressPercent}%</div>
-            {/* <div className="">done</div> */}
-          </div>
-          <div className="w-fit text-[#A9A8BD] text-sm">0m left</div>
+    <div className="flex flex-col flex-grow gap-8 w-full h-full items-center justify-center">
+      {uploadStatus === "Error" ? (
+        <div className="error-container text-center">
+          <h2 className="text-2xl font-bold text-red-600">Processing Failed</h2>
+          <p className="text-md text-gray-700 mt-2">
+            {error || "An unexpected error occurred."}
+          </p>
+          <Button type="fill" onClick={handleCancel} className="mt-4">
+            Retry
+          </Button>
         </div>
-      </div>
-    </Wizard>
+      ) : (
+        <>
+          <WaveSpinner
+            size={30}
+            color={loaderColour}
+            loading={
+              uploadStatus === "Uploading" || uploadStatus === "Processing"
+            }
+          />
+          <p>
+            {uploadStatus === "Processing"
+              ? "Processing audio..."
+              : "Uploading audio..."}
+          </p>
+        </>
+      )}
+    </div>
   );
 };
 

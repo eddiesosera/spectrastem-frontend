@@ -1,12 +1,14 @@
+// Dropdown.tsx
 import React, { useState, useEffect, useRef } from "react";
 import DropdownManager from "./dropdown_manager";
 
-interface DropdownProps {
+interface DropdownProps extends React.HTMLAttributes<HTMLDivElement> {
   id: string;
   header: React.ReactNode;
   items: { label: string; onClick: () => void }[];
   children?: React.ReactNode;
-  alignRight?: boolean; // Optional: Align dropdown to the right
+  alignRight?: boolean;
+  alignTop?: boolean;
 }
 
 const Dropdown: React.FC<DropdownProps> = ({
@@ -15,6 +17,8 @@ const Dropdown: React.FC<DropdownProps> = ({
   items,
   children,
   alignRight = false,
+  alignTop = false,
+  ...rest
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -22,20 +26,19 @@ const Dropdown: React.FC<DropdownProps> = ({
 
   const toggleDropdown = () => {
     if (!isOpen) {
-      dropdownManager.openDropdown(id, closeDropdown); // Open the dropdown
+      dropdownManager.openDropdown(id, closeDropdown);
       setIsOpen(true);
     } else {
-      closeDropdown(); // Close the dropdown
+      closeDropdown();
     }
   };
 
   const closeDropdown = () => {
     setIsOpen(false);
-    dropdownManager.closeDropdown(); // Explicitly notify DropdownManager
+    dropdownManager.closeDropdown();
   };
 
   useEffect(() => {
-    // Handle click outside to close dropdown
     const handleClickOutside = (event: MouseEvent) => {
       if (
         dropdownRef.current &&
@@ -51,7 +54,7 @@ const Dropdown: React.FC<DropdownProps> = ({
   }, []);
 
   return (
-    <div ref={dropdownRef} className="relative">
+    <div ref={dropdownRef} className="relative" {...rest}>
       <div
         onClick={toggleDropdown}
         className="focus:outline-none cursor-pointer"
@@ -60,9 +63,9 @@ const Dropdown: React.FC<DropdownProps> = ({
       </div>
       {isOpen && (
         <div
-          className={`absolute top-full mt-2 bg-white border shadow-lg rounded-lg py-2 w-48 z-50 ${
+          className={`absolute bg-white border shadow-lg rounded-lg py-2 w-48 z-50 ${
             alignRight ? "right-0" : ""
-          }`}
+          } ${alignTop ? "bottom-full mb-2" : "top-full mt-2"}`}
         >
           {items.map((item, index) => (
             <a

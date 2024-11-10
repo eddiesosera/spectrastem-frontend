@@ -1,19 +1,46 @@
-/* src/components/Input/Waveform/waveform.css */
+/* src/components/Waveform/Waveform.css */
 
+#waveform {
+  width: 100%;
+  height: 100px; /* Adjust as needed */
+}
+
+.loader {
+  border: 8px solid #f3f3f3;
+  border-top: 8px solid #57398e;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: auto;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/*  loop fix */
+.wave-region {
+  background-color: rgba(59, 130, 246, 0.5) !important;
+  z-index: 2;
+  pointer-events: auto;
+}
+
+/* Additional styles to ensure region visibility */
 #waveform {
   position: relative;
 }
 
+#waveform > div {
+  position: relative;
+}
+
 .wavesurfer-region {
-  /* Ensure regions are visible */
-  background-color: rgba(59, 130, 246, 0.5) !important;
-  border: 1px solid rgba(59, 130, 246, 1) !important;
-}
-
-.waveform-controls {
-  margin-top: 20px;
-}
-
-button {
-  cursor: pointer;
+  opacity: 0.5;
+  pointer-events: all;
 }

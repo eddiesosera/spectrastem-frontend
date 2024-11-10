@@ -5,6 +5,7 @@ import DropdownManager from "./../Dropdown/dropdown_manager";
 import { desktopItems, profileDropdownItems } from "./nav_items";
 import { Bars3BottomRightIcon } from "@heroicons/react/24/solid";
 import { useNavigate } from "react-router-dom";
+import { RiAccountCircleFill } from "react-icons/ri";
 
 const Navbar: React.FC = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -114,11 +115,12 @@ const Navbar: React.FC = () => {
             <Dropdown
               id="profileDropdown"
               header={
-                <img
-                  src="/path/to/profile-pic.jpg"
-                  alt="Profile"
-                  className="h-8 w-8 rounded-full cursor-pointer"
-                />
+                // <img
+                //   src="/path/to/profile-pic.jpg"
+                //   alt="Profile"
+                //   className="h-8 w-8 rounded-full cursor-pointer"
+                // />
+                <RiAccountCircleFill className="size-6" />
               }
               items={profileDropdownItems}
               alignRight

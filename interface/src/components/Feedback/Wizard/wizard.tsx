@@ -1,14 +1,31 @@
-import React from "react";
+import React, { useCallback, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { steps } from "../../../pages/Processing/steps";
+import { ChevronLeftIcon } from "@heroicons/react/24/solid";
 
 interface WizardProps {
   children: React.ReactElement;
   header?: React.ReactNode;
+  headerRightEl?: React.ReactNode;
+  headerLeftPrevElShow?: boolean;
   footer?: React.ReactNode;
+  footerEls?: React.ReactNode[];
+  footerNextElShow?: boolean;
+  setHandleNext?: (handleNext: () => void) => void;
+  setHandlePrevious?: (handlePrevious: () => void) => void;
 }
 
-const Wizard: React.FC<WizardProps> = ({ children, header, footer }) => {
+const Wizard: React.FC<WizardProps> = ({
+  children,
+  header,
+  headerLeftPrevElShow = true,
+  headerRightEl,
+  footer,
+  footerEls,
+  footerNextElShow = false,
+  setHandleNext,
+  setHandlePrevious,
+}) => {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -18,19 +35,24 @@ const Wizard: React.FC<WizardProps> = ({ children, header, footer }) => {
   );
 
   // Functions to handle navigation
-  const handleNext = () => {
+  const handleNext = useCallback(() => {
     if (currentStepIndex < steps.length - 1) {
       navigate(steps[currentStepIndex + 1].url);
     }
-  };
+  }, [currentStepIndex, navigate]);
 
-  const handlePrevious = () => {
+  const handlePrevious = useCallback(() => {
     if (currentStepIndex > 0) {
       navigate(steps[currentStepIndex - 1].url);
     }
-  };
+  }, [currentStepIndex, navigate]);
 
-  // If the current URL does not match any step, display an error or redirect
+  // Set handleNext and handlePrevious only once when the component mounts
+  useEffect(() => {
+    if (setHandleNext) setHandleNext(() => handleNext);
+    if (setHandlePrevious) setHandlePrevious(() => handlePrevious);
+  }, []); // Empty dependency array ensures this only runs on mount
+
   if (currentStepIndex === -1) {
     return <div>Error: Invalid step.</div>;
   }
@@ -84,36 +106,39 @@ const Wizard: React.FC<WizardProps> = ({ children, header, footer }) => {
   // StepContent Component for displaying the step image, title, and description
   const StepContent: React.FC<{ currentStep: any }> = ({ currentStep }) => (
     <div className="flex flex-col items-center">
-      {/* Step Image */}
-      {/* <img
-        src={currentStep.image} // Ensure each step object has an `image` URL
-        alt={currentStep.name}
-        className="w-24 h-24 mb-4"
-      /> */}
       {currentStep.img}
-      {/* Step Title */}
       <h2 className="text-lg font-bold">{currentStep.name}</h2>
-      {/* Step Description */}
       <p className="text-gray-500 text-sm">{currentStep.description}</p>
     </div>
   );
 
   // Default Header
   const defaultHeader = (
-    <div className="wizard-header p-4 border-b border-gray-200">
+    <div
+      className={`wizard-header flex flex-row p-4 border-b border-gray-200 gap-4 items-center ${
+        headerRightEl
+          ? "justify-between"
+          : !headerLeftPrevElShow
+          ? "justify-center"
+          : ""
+      }`}
+    >
+      {headerLeftPrevElShow && (
+        <div onClick={handlePrevious}>
+          <ChevronLeftIcon className="size-5 cursor-pointer" />
+        </div>
+      )}
       <h1 className="text-lg font-bold">{steps[currentStepIndex].name}</h1>
+      {headerRightEl}
     </div>
   );
 
   // Default Footer
   const defaultFooter = (
-    <div className="wizard-footer p-4 border-t border-gray-200 flex justify-between">
-      {currentStepIndex > 0 && (
-        <button onClick={handlePrevious} className="prev-button">
-          Previous
-        </button>
-      )}
-      {currentStepIndex < steps.length - 1 && (
+    <div className="wizard-footer p-4 border-t border-gray-200 flex justify-center gap-5">
+      {footerEls?.map((el) => el)}
+
+      {footerNextElShow && currentStepIndex < steps.length - 1 && (
         <button onClick={handleNext} className="next-button">
           Next
         </button>
@@ -125,10 +150,7 @@ const Wizard: React.FC<WizardProps> = ({ children, header, footer }) => {
     <div className="wizard flex flex-grow p-4 w-full h-full p-4 bg-[#F5F4FB]">
       <div className="wizard-inner flex gap-4 w-full h-full">
         <div className="wizard-container flex flex-col flex-grow p-6 g-4 bg-white rounded-[1.25rem] border border-[#D2D2D2] justify-between h-full">
-          {/* Header */}
           {header !== undefined ? header : defaultHeader}
-
-          {/* Content */}
           <div className="wizard-content flex flex-col flex-grow h-full p-6 justify-center align-center">
             {React.cloneElement(children, {
               handleNext,
@@ -137,12 +159,8 @@ const Wizard: React.FC<WizardProps> = ({ children, header, footer }) => {
               totalSteps: steps.length,
             })}
           </div>
-
-          {/* Footer */}
           {footer !== undefined ? footer : defaultFooter}
         </div>
-
-        {/* Sidebar with Progress Bar and Step Details */}
         <div className="wizard-sidebar w-1/3 bg-wizard-s-bg rounded-[1.25rem] border border-[#D2D2D2] p-6">
           <ProgressBar steps={steps} currentStepIndex={currentStepIndex} />
           <StepContent currentStep={steps[currentStepIndex]} />

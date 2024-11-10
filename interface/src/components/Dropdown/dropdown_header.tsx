@@ -1,7 +1,7 @@
+// DropdownHeader.tsx
 import React, { ReactNode, useEffect, useState } from "react";
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/solid";
 import DropdownManager from "./dropdown_manager";
-// import DropdownManager from "./DropdownManager";
 
 interface DropdownHeaderProps {
   label: string | ReactNode;
@@ -40,10 +40,10 @@ export const DropdownHeader: React.FC<DropdownHeaderProps> = ({
 
   return (
     <div
-      className="flex justify-between items-center gap-2 cursor-pointer"
+      className="flex items-center justify-between gap-2 px-4 py-2 rounded cursor-pointer "
       onClick={toggleDropdown}
     >
-      <div className="text-sm">{label}</div>
+      <span className="text-sm">{label}</span>
       {!isClicked ? (
         <ChevronDownIcon className="w-4 h-4" />
       ) : (
