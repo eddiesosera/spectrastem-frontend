@@ -82,7 +82,7 @@ const SelectSegment: React.FC = () => {
   // Custom-styled DropdownHeader for SelectSegment
   const CustomDropdownHeader = () => (
     <div
-      className="flex items-center justify-between gap-2 px-4 py-2 bg-purple-600 text-white rounded cursor-pointer hover:bg-purple-700"
+      className="flex items-center justify-between gap-2 px-4 py-2 bg-[#534BAF] hover:bg-[#934BAF] text-white rounded-lg cursor-pointer hover:bg-purple-700"
       onClick={() => setIsDropdownOpen(!isDropdownOpen)}
     >
       <span className="text-sm">Extract Stems</span>
