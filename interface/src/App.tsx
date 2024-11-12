@@ -6,6 +6,7 @@ import AppRoutes from "./utils/routes/routes";
 import { Provider } from "react-redux";
 import store from "./redux/store";
 import { FileProvider } from "./context/file.context";
+import { TimerProvider } from "./context/timer.context";
 
 const App: React.FC = () => {
   return (
@@ -13,9 +14,11 @@ const App: React.FC = () => {
       <ErrorBoundary>
         <AuthProvider>
           <FileProvider>
-            <Provider store={store}>
-              <AppRoutes />
-            </Provider>
+            <TimerProvider>
+              <Provider store={store}>
+                <AppRoutes />
+              </Provider>
+            </TimerProvider>
           </FileProvider>
         </AuthProvider>
       </ErrorBoundary>

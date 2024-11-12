@@ -1,4 +1,5 @@
-// FileContext.tsx
+// interface/context/FileContext.tsx
+
 import React, {
   createContext,
   useState,
@@ -9,21 +10,20 @@ import React, {
 
 type UploadStatus = "Idle" | "Uploading" | "Processing" | "Completed" | "Error";
 
-interface MidiResponse {
+interface MidiResults {
   message: string;
-  trackName: string;
-  status: string;
-  midiFiles: string[];
+  midi_files: { [key: string]: string };
 }
 
-interface StemsResponse {
-  message: string;
-  trackName: string;
-  status: string;
-  stems: string[];
+interface ProcessingResults {
+  stems?: { [key: string]: string };
+  midi?: MidiResults;
+  message?: string;
+  trackName?: string;
+  status?: string;
 }
 
-type ResultData = MidiResponse | StemsResponse | null;
+type ResultData = ProcessingResults | null;
 
 interface FileContextProps {
   uploadedFile: File | null;

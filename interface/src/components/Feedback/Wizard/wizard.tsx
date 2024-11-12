@@ -1,5 +1,7 @@
+// interface/components/Feedback/Wizard/Wizard.tsx
+
 import React, { useCallback, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, matchPath } from "react-router-dom";
 import { steps } from "../../../pages/Processing/steps";
 import { ChevronLeftIcon } from "@heroicons/react/24/solid";
 
@@ -29,9 +31,9 @@ const Wizard: React.FC<WizardProps> = ({
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Find the current step index based on the current URL
-  const currentStepIndex = steps.findIndex(
-    (step) => step.url === location.pathname
+  // Find the current step index based on the current URL using matchPath
+  const currentStepIndex = steps.findIndex((step) =>
+    matchPath({ path: step.url, end: true }, location.pathname)
   );
 
   // Functions to handle navigation
@@ -51,7 +53,7 @@ const Wizard: React.FC<WizardProps> = ({
   useEffect(() => {
     if (setHandleNext) setHandleNext(() => handleNext);
     if (setHandlePrevious) setHandlePrevious(() => handlePrevious);
-  }, []); // Empty dependency array ensures this only runs on mount
+  }, [handleNext, handlePrevious, setHandleNext, setHandlePrevious]);
 
   if (currentStepIndex === -1) {
     return <div>Error: Invalid step.</div>;
@@ -105,9 +107,9 @@ const Wizard: React.FC<WizardProps> = ({
 
   // StepContent Component for displaying the step image, title, and description
   const StepContent: React.FC<{ currentStep: any }> = ({ currentStep }) => (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-center align-center justify-center h-auto mt-4">
       {currentStep.img}
-      <h2 className="text-lg font-bold">{currentStep.name}</h2>
+      <h2 className="text-2xlg font-bold">{currentStep.name}</h2>
       <p className="text-gray-500 text-sm">{currentStep.description}</p>
     </div>
   );
@@ -125,7 +127,7 @@ const Wizard: React.FC<WizardProps> = ({
     >
       {headerLeftPrevElShow && (
         <div onClick={handlePrevious}>
-          <ChevronLeftIcon className="size-5 cursor-pointer" />
+          <ChevronLeftIcon className="w-5 h-5 cursor-pointer" />
         </div>
       )}
       <h1 className="text-lg font-bold">{steps[currentStepIndex].name}</h1>
@@ -136,10 +138,15 @@ const Wizard: React.FC<WizardProps> = ({
   // Default Footer
   const defaultFooter = (
     <div className="wizard-footer p-4 border-t border-gray-200 flex justify-center gap-5">
-      {footerEls?.map((el) => el)}
+      {footerEls?.map((el, idx) => (
+        <React.Fragment key={idx}>{el}</React.Fragment>
+      ))}
 
       {footerNextElShow && currentStepIndex < steps.length - 1 && (
-        <button onClick={handleNext} className="next-button">
+        <button
+          onClick={handleNext}
+          className="next-button bg-blue-500 text-white px-4 py-2 rounded"
+        >
           Next
         </button>
       )}
@@ -147,11 +154,11 @@ const Wizard: React.FC<WizardProps> = ({
   );
 
   return (
-    <div className="wizard flex flex-grow p-4 w-full h-full p-4 bg-[#F5F4FB]">
+    <div className="wizard flex flex-grow p-4 w-full h-full bg-[#F5F4FB]">
       <div className="wizard-inner flex gap-4 w-full h-full">
-        <div className="wizard-container flex flex-col flex-grow p-6 g-4 bg-white rounded-[1.25rem] border border-[#D2D2D2] justify-between h-full">
+        <div className="wizard-container flex flex-col flex-grow p-6 bg-white rounded-[1.25rem] border border-[#D2D2D2] justify-between h-full">
           {header !== undefined ? header : defaultHeader}
-          <div className="wizard-content flex flex-col flex-grow h-full p-6 justify-center align-center">
+          <div className="wizard-content flex flex-col flex-grow h-full p-6 justify-center">
             {React.cloneElement(children, {
               handleNext,
               handlePrevious,
@@ -161,7 +168,7 @@ const Wizard: React.FC<WizardProps> = ({
           </div>
           {footer !== undefined ? footer : defaultFooter}
         </div>
-        <div className="wizard-sidebar w-1/3 bg-wizard-s-bg rounded-[1.25rem] border border-[#D2D2D2] p-6">
+        <div className="wizard-sidebar h-full w-1/3 bg-wizard-s-bg rounded-[1.25rem] border border-[#D2D2D2] p-6">
           <ProgressBar steps={steps} currentStepIndex={currentStepIndex} />
           <StepContent currentStep={steps[currentStepIndex]} />
         </div>

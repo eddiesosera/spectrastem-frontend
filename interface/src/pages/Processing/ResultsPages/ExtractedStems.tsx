@@ -1,23 +1,35 @@
-// ExtractedStems.tsx
+// interface/pages/ResultsPages/ExtractedStems.tsx
+
 import React from "react";
+import AudioPlayer from "../../../components/Feedback/AudioPlayer/audio_player";
 
 interface ExtractedStemsProps {
-  stems: string[];
+  stems: { [key: string]: string };
 }
 
 const ExtractedStems: React.FC<ExtractedStemsProps> = ({ stems }) => {
   return (
-    <div>
-      <h2>Extracted Stems</h2>
+    <div className="stems-container">
+      <h3 className="text-xl font-bold mb-4">Extracted Stems</h3>
       <ul>
-        {stems.map((file, index) => (
-          <li key={index}>
-            <a href={file} target="_blank" rel="noopener noreferrer">
-              Stem File {index + 1}
-            </a>
+        {Object.entries(stems).map(([stemName, url]) => (
+          <li key={stemName} className="mb-4">
+            {/* <h4 className="text-md font-semibold capitalize">
+              {stemName.replace(".mp3", "")}
+            </h4>
+            <audio controls src={url} className="w-full mt-2">
+              Your browser does not support the audio element.
+            </audio> */}
+            <AudioPlayer
+              audioSrc={url}
+              fileName={stemName.replace(".mp3", "")}
+            />
           </li>
         ))}
       </ul>
+      <p className="text-sm text-gray-500 mt-4">
+        Listen to each stem individually using the audio controls above.
+      </p>
     </div>
   );
 };

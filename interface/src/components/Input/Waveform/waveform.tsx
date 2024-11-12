@@ -244,15 +244,17 @@ const Waveform: React.FC<WaveformPreview> = ({ audioFile }) => {
         )}
 
         {waveformReady && (
-          <div className="w-[137px]">
+          <div className="w-fit">
             <Dropdown
               id="waveform-speed"
               header={
                 <DropdownHeader
                   label={
-                    <div className="flex flex-row items-center justify-center gap-1">
+                    <div className="flex flex-row w-auto items-center justify-center gap-1">
                       <RiSpeedUpFill className="size-6" />
-                      <div>Speed ({currentSpeed}x)</div>
+                      <div className="flex flex-row w-[70px]">
+                        {`Speed ${currentSpeed}x`}
+                      </div>
                     </div>
                   }
                   dropdownId="waveform-speed"

@@ -19,7 +19,7 @@ export const steps = [
   },
   {
     name: "Results",
-    url: "/process/results/stems",
+    url: "/process/results/:method",
     description: "Your stems are ready.",
     img: <ResultsSVG />,
   },

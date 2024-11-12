@@ -1,16 +1,19 @@
-// ResultsPage.tsx
+// interface/pages/ResultsPages/ResultsPage.tsx
+
 import React, { useContext, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Wizard from "../../../components/Feedback/Wizard/wizard";
 import ExtractedStems from "./ExtractedStems";
 import ExtractedMidi from "./ExtractedMidi";
 import Confetti from "react-confetti";
-import { FileContext } from "../../../context/file.context";
+// import { FileContext } from "../../../context/FileContext";
 import { Button } from "../../../components/Button/button";
+import { FileContext } from "../../../context/file.context";
 
 const ResultsPage: React.FC = () => {
   const { result, uploadStatus, error } = useContext(FileContext);
   const navigate = useNavigate();
+  const { method } = useParams<{ method: string }>();
   const [showConfetti, setShowConfetti] = useState<boolean>(false);
 
   useEffect(() => {
@@ -27,10 +30,12 @@ const ResultsPage: React.FC = () => {
 
   const ShowMethodResults = () => {
     if (result) {
-      if ("midiFiles" in result) {
-        return <ExtractedMidi midiFiles={result.midiFiles} />;
-      } else if ("stems" in result) {
-        return <ExtractedStems stems={result.stems} />;
+      const processingResults = result.results || result; // Adjust based on how 'result' is set
+
+      if (method === "midi" && result.midi && result.midi.midi_files) {
+        return <ExtractedMidi midiFiles={result.midi.midi_files} />;
+      } else if (method === "stems" && result.stems) {
+        return <ExtractedStems stems={result.stems.stems} />;
       } else {
         return (
           <div className="text-center">

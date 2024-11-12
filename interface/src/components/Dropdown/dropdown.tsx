@@ -57,7 +57,9 @@ const Dropdown: React.FC<DropdownProps> = ({
     <div ref={dropdownRef} className="relative" {...rest}>
       <div
         onClick={toggleDropdown}
-        className="focus:outline-none cursor-pointer"
+        className={`relative focus:outline-none cursor-pointer rounded-lg ${
+          isOpen ? "border" : "border border-white"
+        }`}
       >
         {header}
       </div>

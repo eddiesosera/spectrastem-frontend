@@ -1,58 +1,82 @@
-// ProcessLoader.tsx
-import React, { useEffect, useState, useContext } from "react";
-import { useNavigate } from "react-router-dom";
-import { FileContext } from "../../context/file.context";
-import { WaveSpinner } from "react-spinners-kit";
-import { Button } from "../../components/Button/button";
+// interface/pages/ProcessLoaderPage.tsx
 
-const ProcessLoader: React.FC = () => {
-  const { uploadStatus, error, setUploadStatus } = useContext(FileContext);
+import React, { useEffect, useContext } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import Wizard from "../../components/Feedback/Wizard/wizard";
+import { FileContext } from "../../context/file.context";
+import { TimerContext } from "../../context/timer.context";
+// import EstimatedTimeLeft from "../../components/EstimatedTimeLeft"; // Corrected import path
+import { WaveSpinner } from "react-spinners-kit";
+import EstimatedTimeLeft from "../../components/Feedback/EstimatedTimeLeft/estimated_time_left";
+
+interface LocationState {
+  trackName: string;
+  generateMIDI: boolean;
+  processStems: boolean;
+}
+
+const ProcessLoaderPage: React.FC = () => {
+  const location = useLocation();
   const navigate = useNavigate();
-  const [loaderColour, setLoaderColour] = useState<string>("#534BAF");
+  const { trackName, generateMIDI, processStems } = (location.state ||
+    {}) as LocationState;
+  const { setUploadStatus, setError } = useContext(FileContext);
+  const { remainingTime } = useContext(TimerContext);
 
   useEffect(() => {
-    if (uploadStatus === "Completed") {
-      navigate("/process/results");
-    } else if (uploadStatus === "Error") {
-      // Stay on this page to show error message
+    if (!trackName) {
+      // If no trackName is provided, navigate back to select segment
+      navigate("/process/select-segment");
+      return;
     }
-  }, [uploadStatus, navigate]);
 
-  const handleCancel = () => {
-    setUploadStatus("Idle");
-    navigate("/");
-  };
+    const startProcessing = () => {
+      try {
+        // Set up an interval to check remainingTime every second
+        const intervalId = setInterval(() => {
+          if (remainingTime <= 0) {
+            clearInterval(intervalId);
+            // Navigate to Results Page with absolute path and trackName
+            if (generateMIDI) {
+              navigate(`/process/results/midi/${trackName}`);
+            } else if (processStems) {
+              navigate(`/process/results/stems/${trackName}`);
+            }
+          }
+        }, 1000);
+      } catch (error: any) {
+        setError(error.message || "Processing failed.");
+        setUploadStatus("Error");
+        navigate("/process/select-segment");
+      }
+    };
+
+    startProcessing();
+
+    // Cleanup function to clear interval if component unmounts
+    return () => {
+      // Clear the interval to prevent memory leaks
+      // Note: The interval is already cleared when remainingTime <= 0
+    };
+  }, [
+    trackName,
+    generateMIDI,
+    processStems,
+    navigate,
+    setError,
+    setUploadStatus,
+    remainingTime,
+  ]);
 
   return (
-    <div className="flex flex-col flex-grow gap-8 w-full h-full items-center justify-center">
-      {uploadStatus === "Error" ? (
-        <div className="error-container text-center">
-          <h2 className="text-2xl font-bold text-red-600">Processing Failed</h2>
-          <p className="text-md text-gray-700 mt-2">
-            {error || "An unexpected error occurred."}
-          </p>
-          <Button type="fill" onClick={handleCancel} className="mt-4">
-            Retry
-          </Button>
-        </div>
-      ) : (
-        <>
-          <WaveSpinner
-            size={30}
-            color={loaderColour}
-            loading={
-              uploadStatus === "Uploading" || uploadStatus === "Processing"
-            }
-          />
-          <p>
-            {uploadStatus === "Processing"
-              ? "Processing audio..."
-              : "Uploading audio..."}
-          </p>
-        </>
-      )}
-    </div>
+    <Wizard>
+      <div className="flex flex-col items-center justify-center h-full p-6">
+        <WaveSpinner className="size-6" size={30} color="#534BAF" />
+        <p className="text-lg text-gray-700 mt-4">Processing your file...</p>
+        <EstimatedTimeLeft />
+      </div>
+    </Wizard>
   );
 };
 
-export default ProcessLoader;
+export default ProcessLoaderPage;

@@ -81,7 +81,7 @@ const Navbar: React.FC = () => {
           </div>
 
           {/* Middle Section: Dropdown Links */}
-          <div className="hidden md:flex space-x-6">
+          <div className="hidden md:flex space-x-6 flex flex-row items-center align-center">
             {desktopItems.map((item) =>
               item.type === "dropdown" ? (
                 <Dropdown

@@ -40,10 +40,10 @@ export const DropdownHeader: React.FC<DropdownHeaderProps> = ({
 
   return (
     <div
-      className="flex items-center justify-between gap-2 px-4 py-2 rounded cursor-pointer "
+      className="flex items-center justify-between gap-2 px-4 py-2 rounded cursor-pointer w-fit"
       onClick={toggleDropdown}
     >
-      <span className="text-sm">{label}</span>
+      <span className="text-sm w-full">{label}</span>
       {!isClicked ? (
         <ChevronDownIcon className="w-4 h-4" />
       ) : (
