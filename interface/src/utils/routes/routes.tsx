@@ -22,8 +22,6 @@ import ProcessLoader from "../../pages/Processing/ProcessLoader";
 // import { ProcessLoader } from "./../../pages/Processing/ProcessLoader";
 
 const AppRoutes: React.FC = () => {
-  // const [trackName, setTrackName] = useState<string | null>(null);
-
   return (
     <div className="flex flex-col h-full">
       <Navbar />
@@ -119,8 +117,9 @@ const AppRoutes: React.FC = () => {
             </PrivateRoute>
           }
         />
+        {/* Updated Results Page Route with Dynamic Parameters */}
         <Route
-          path="/process/results/:method"
+          path="/process/results/:method/:trackName"
           element={
             <PrivateRoute>
               <ResultsPage />

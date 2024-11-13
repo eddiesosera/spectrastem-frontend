@@ -1,82 +1,49 @@
 // interface/pages/SelectSegment.tsx
 
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Wizard from "../../components/Feedback/Wizard/wizard";
-import Waveform from "../../components/Input/Waveform/waveform";
-import { Button } from "../../components/Button/button";
-import Dropdown from "../../components/Dropdown/dropdown";
-import { ChevronDownIcon } from "@heroicons/react/24/solid";
 import { uploadAndProcessFile } from "../../services/api.service";
 import { FileContext } from "../../context/file.context";
 import { TimerContext } from "../../context/timer.context";
-import { getAudioDuration } from "../../services/audio_extraction";
-import EstimatedTimeLeft from "../../components/Feedback/EstimatedTimeLeft/estimated_time_left";
-import { WaveSpinner } from "react-spinners-kit";
-import { estimateRemainingTime } from "../../utils/ui/upload_time_estimate";
+import { ChevronDownIcon } from "@heroicons/react/24/solid";
+import { Button } from "../../components/Button/button";
+import Dropdown from "../../components/Dropdown/dropdown";
+import Wizard from "../../components/Feedback/Wizard/wizard";
 
 const SelectSegment: React.FC = () => {
-  const { uploadedFile, setUploadStatus, setError } = useContext(FileContext);
-  const { setRemainingTime } = useContext(TimerContext);
+  const { uploadedFile, setUploadedFile, setUploadStatus, setError } =
+    useContext(FileContext);
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [processingOptions, setProcessingOptions] = useState({
-    generateMIDI: false,
-    processStems: true,
-    stemsType: "all" as "all" | "vocals_instrumentals",
-  });
 
-  useEffect(() => {
-    if (!uploadedFile) {
-      navigate("/");
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      setUploadedFile(file);
     }
-  }, [uploadedFile, navigate]);
+  };
 
-  if (!uploadedFile) {
-    return null;
-  }
-
-  /**
-   * Handles the Generate MIDI action.
-   */
   const handleGenerateMIDI = async () => {
+    if (!uploadedFile) {
+      setError("No file uploaded.");
+      return;
+    }
+
     setIsLoading(true);
     setUploadStatus("Uploading");
-    console.log("Upload started");
-
     try {
-      // Extract audio duration
-      const duration = await getAudioDuration(uploadedFile); // in seconds
-
-      // Get file size in KB
-      const size = uploadedFile.size / 1024; // KB
-
-      // Get upload speed (optional)
-      const uploadSpeed = getUploadSpeed(); // KB/s or undefined
-
-      // Calculate estimated time
-      const estimatedTime = estimateRemainingTime({
-        duration,
-        size,
-        uploadSpeed,
-      });
-
-      // Set the estimated time in global state
-      setRemainingTime(estimatedTime);
-
-      // Initiate the upload and processing
       const response = await uploadAndProcessFile(uploadedFile, {
         generateMIDI: true,
         processStems: false,
       });
 
-      console.log("Upload response:", response);
+      console.log("Upload Response:", response); // Debugging log
 
       if (response.status === "Uploaded") {
         const uniqueTrackName = response.track_name;
         setUploadStatus("Processing");
 
-        // Navigate to Process Loader Page
+        // Navigate to ProcessLoader without setting remainingTime
         navigate("/process/processing-audio", {
           state: {
             trackName: uniqueTrackName,
@@ -89,65 +56,37 @@ const SelectSegment: React.FC = () => {
         setUploadStatus("Error");
       }
     } catch (error: any) {
-      setError(
-        error.message || "An unexpected error occurred during MIDI generation."
-      );
+      setError(error.message || "An unexpected error occurred.");
       setUploadStatus("Error");
     } finally {
       setIsLoading(false);
-      console.log("Upload ended");
     }
   };
 
-  /**
-   * Handles the Extract Stems option selection.
-   * @param type Type of stem separation.
-   */
   const handleStemsOptionSelect = async (
     type: "all" | "vocals_instrumentals"
   ) => {
-    setProcessingOptions((prevOptions) => ({
-      ...prevOptions,
-      stemsType: type,
-    }));
+    if (!uploadedFile) {
+      setError("No file uploaded.");
+      return;
+    }
+
     setIsLoading(true);
     setUploadStatus("Uploading");
-    console.log("Stems upload started");
-
     try {
-      // Extract audio duration
-      const duration = await getAudioDuration(uploadedFile); // in seconds
-
-      // Get file size in KB
-      const size = uploadedFile.size / 1024; // KB
-
-      // Get upload speed (optional)
-      const uploadSpeed = getUploadSpeed(); // KB/s or undefined
-
-      // Calculate estimated time
-      const estimatedTime = estimateRemainingTime({
-        duration,
-        size,
-        uploadSpeed,
-      });
-
-      // Set the estimated time in global state
-      setRemainingTime(estimatedTime);
-
-      // Initiate the upload and processing
       const response = await uploadAndProcessFile(uploadedFile, {
         generateMIDI: false,
         processStems: true,
         stemsType: type,
       });
 
-      console.log("Stems upload response:", response);
+      console.log("Upload Response:", response); // Debugging log
 
       if (response.status === "Uploaded") {
         const uniqueTrackName = response.track_name;
         setUploadStatus("Processing");
 
-        // Navigate to Process Loader Page
+        // Navigate to ProcessLoader without setting remainingTime
         navigate("/process/processing-audio", {
           state: {
             trackName: uniqueTrackName,
@@ -156,14 +95,14 @@ const SelectSegment: React.FC = () => {
           },
         });
       } else {
-        throw new Error(response.message || "File processing failed.");
+        setError(response.message || "File processing failed.");
+        setUploadStatus("Error");
       }
     } catch (error: any) {
       setError(error.message || "An unexpected error occurred.");
       setUploadStatus("Error");
     } finally {
       setIsLoading(false);
-      console.log("Stems upload ended");
     }
   };
 
@@ -226,34 +165,20 @@ const SelectSegment: React.FC = () => {
         <ExtractStemsDropdown key="extract-stems-dropdown" />,
       ]}
     >
-      {isLoading ? (
-        // Show loader and uploading text with estimated time
-        <div className="flex flex-col items-center justify-center gap-4">
-          <WaveSpinner className="size-6" size={30} color="#534BAF" />
-          <p className="text-lg text-gray-700">Uploading...</p>
-          <EstimatedTimeLeft />
-        </div>
-      ) : (
-        // Show waveform when not loading
-        <div>
-          <Waveform audioFile={uploadedFile} />
-        </div>
-      )}
+      <div className="flex flex-col items-center justify-center h-full p-6">
+        <input
+          type="file"
+          accept="audio/*"
+          onChange={handleFileUpload}
+          disabled={isLoading}
+          className="mb-4"
+        />
+        {uploadedFile && (
+          <p className="text-gray-700">Selected File: {uploadedFile.name}</p>
+        )}
+      </div>
     </Wizard>
   );
-};
-
-/**
- * Retrieves the current upload speed.
- * Implement this function to calculate actual upload speed if desired.
- * For simplicity, it returns undefined to exclude upload time from estimation.
- * @returns Upload speed in KB/s or undefined.
- */
-const getUploadSpeed = (): number | undefined => {
-  // Implement logic to measure upload speed if needed
-  // This could involve tracking upload progress and calculating speed
-  // For now, return undefined to exclude upload time
-  return undefined;
 };
 
 export default SelectSegment;

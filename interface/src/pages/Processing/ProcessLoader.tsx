@@ -1,13 +1,15 @@
-// interface/pages/ProcessLoaderPage.tsx
+// interface/pages/Processing/ProcessLoaderPage.tsx
 
-import React, { useEffect, useContext } from "react";
+import React, { useEffect, useContext, useState, useRef } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import Wizard from "../../components/Feedback/Wizard/wizard";
-import { FileContext } from "../../context/file.context";
-import { TimerContext } from "../../context/timer.context";
-// import EstimatedTimeLeft from "../../components/EstimatedTimeLeft"; // Corrected import path
+// import Wizard from "../../components/Feedback/Wizard/Wizard";
+// import { FileContext } from "../../context/FileContext";
+// import { TimerContext } from "../../context/TimerContext";
 import { WaveSpinner } from "react-spinners-kit";
-import EstimatedTimeLeft from "../../components/Feedback/EstimatedTimeLeft/estimated_time_left";
+import { TimerContext } from "../../context/timer.context";
+import { FileContext } from "../../context/file.context";
+import Wizard from "../../components/Feedback/Wizard/wizard";
+import { checkProcessingStatus } from "../../services/api.service";
 
 interface LocationState {
   trackName: string;
@@ -21,42 +23,70 @@ const ProcessLoaderPage: React.FC = () => {
   const { trackName, generateMIDI, processStems } = (location.state ||
     {}) as LocationState;
   const { setUploadStatus, setError } = useContext(FileContext);
-  const { remainingTime } = useContext(TimerContext);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (!trackName) {
       // If no trackName is provided, navigate back to select segment
+      console.error("No trackName provided in navigation state.");
       navigate("/process/select-segment");
       return;
     }
 
-    const startProcessing = () => {
+    const fetchStatus = async () => {
       try {
-        // Set up an interval to check remainingTime every second
-        const intervalId = setInterval(() => {
-          if (remainingTime <= 0) {
-            clearInterval(intervalId);
-            // Navigate to Results Page with absolute path and trackName
-            if (generateMIDI) {
-              navigate(`/process/results/midi/${trackName}`);
-            } else if (processStems) {
-              navigate(`/process/results/stems/${trackName}`);
-            }
+        console.log(`Checking status for track: ${trackName}`);
+        const status = await checkProcessingStatus(trackName);
+        console.log("Received status:", status);
+
+        if (status.status === "Completed") {
+          console.log("Processing completed.");
+          setUploadStatus("Completed");
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+            console.log("Polling cleared.");
           }
-        }, 1000);
+
+          // Navigate to Results Page based on the method
+          if (generateMIDI) {
+            navigate(`/process/results/midi/${trackName}`);
+          } else if (processStems) {
+            navigate(`/process/results/stems/${trackName}`);
+          } else {
+            throw new Error("No valid processing method selected.");
+          }
+        } else if (status.status === "Error") {
+          throw new Error(status.message || "Processing failed.");
+        } else {
+          console.log("Processing still ongoing.");
+        }
       } catch (error: any) {
-        setError(error.message || "Processing failed.");
+        console.error("Error during processing:", error);
+        setError(error.message || "An unexpected error occurred.");
         setUploadStatus("Error");
+        if (intervalRef.current) {
+          clearInterval(intervalRef.current);
+          intervalRef.current = null;
+          console.log("Polling cleared.");
+        }
         navigate("/process/select-segment");
       }
     };
 
-    startProcessing();
+    // Initial status check
+    fetchStatus();
 
-    // Cleanup function to clear interval if component unmounts
+    // Set up polling every 5 seconds
+    intervalRef.current = setInterval(fetchStatus, 5000);
+    console.log("Polling started.");
+
+    // Cleanup function to clear interval when component unmounts
     return () => {
-      // Clear the interval to prevent memory leaks
-      // Note: The interval is already cleared when remainingTime <= 0
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        console.log("Polling cleared on unmount.");
+      }
     };
   }, [
     trackName,
@@ -65,15 +95,16 @@ const ProcessLoaderPage: React.FC = () => {
     navigate,
     setError,
     setUploadStatus,
-    remainingTime,
   ]);
 
   return (
     <Wizard>
       <div className="flex flex-col items-center justify-center h-full p-6">
-        <WaveSpinner className="size-6" size={30} color="#534BAF" />
+        <WaveSpinner className="size-6" size={50} color="#534BAF" />
         <p className="text-lg text-gray-700 mt-4">Processing your file...</p>
-        <EstimatedTimeLeft />
+        <p className="text-sm text-gray-500 mt-2">
+          Please wait while we process your request.
+        </p>
       </div>
     </Wizard>
   );

@@ -1,3 +1,5 @@
+// interface/pages/Processing/steps.tsx
+
 import {
   MediaSelectSVG,
   ProcessingSVG,
@@ -19,8 +21,8 @@ export const steps = [
   },
   {
     name: "Results",
-    url: "/process/results/:method",
-    description: "Your stems are ready.",
+    url: "/process/results/*", // Changed to wildcard to match any results path
+    description: "Your results are ready.",
     img: <ResultsSVG />,
   },
 ];

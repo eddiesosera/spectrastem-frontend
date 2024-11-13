@@ -107,25 +107,25 @@ const writeUTFBytes = (view: DataView, offset: number, string: string) => {
   }
 };
 
-/**
- * Extracts the duration of an audio file in seconds.
- * @param file The audio file.
- * @returns A promise that resolves to the duration in seconds.
- */
-export const getAudioDuration = (file: File): Promise<number> => {
-  return new Promise((resolve, reject) => {
-    const audio = new Audio();
-    const objectUrl = URL.createObjectURL(file);
+// /**
+//  * Extracts the duration of an audio file in seconds.
+//  * @param file The audio file.
+//  * @returns A promise that resolves to the duration in seconds.
+//  */
+// export const getAudioDuration = (file: File): Promise<number> => {
+//   return new Promise((resolve, reject) => {
+//     const audio = new Audio();
+//     const objectUrl = URL.createObjectURL(file);
 
-    audio.src = objectUrl;
-    audio.addEventListener("loadedmetadata", () => {
-      resolve(audio.duration);
-      URL.revokeObjectURL(objectUrl);
-    });
+//     audio.src = objectUrl;
+//     audio.addEventListener("loadedmetadata", () => {
+//       resolve(audio.duration);
+//       URL.revokeObjectURL(objectUrl);
+//     });
 
-    audio.addEventListener("error", () => {
-      reject(new Error("Failed to load audio metadata"));
-      URL.revokeObjectURL(objectUrl);
-    });
-  });
-};
+//     audio.addEventListener("error", () => {
+//       reject(new Error("Failed to load audio metadata"));
+//       URL.revokeObjectURL(objectUrl);
+//     });
+//   });
+// };

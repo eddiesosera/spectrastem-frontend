@@ -33,7 +33,7 @@ const Wizard: React.FC<WizardProps> = ({
 
   // Find the current step index based on the current URL using matchPath
   const currentStepIndex = steps.findIndex((step) =>
-    matchPath({ path: step.url, end: true }, location.pathname)
+    matchPath({ path: step.url, end: false }, location.pathname)
   );
 
   // Functions to handle navigation
@@ -56,7 +56,9 @@ const Wizard: React.FC<WizardProps> = ({
   }, [handleNext, handlePrevious, setHandleNext, setHandlePrevious]);
 
   if (currentStepIndex === -1) {
-    return <div>Error: Invalid step.</div>;
+    return (
+      <div className="text-center mt-10 text-red-500">Error: Invalid step.</div>
+    );
   }
 
   // ProgressBar Component
@@ -66,13 +68,15 @@ const Wizard: React.FC<WizardProps> = ({
   }) => (
     <div className="wizard-progress-bar bg-white rounded-lg p-6 shadow-sm mb-8">
       <div className="flex justify-between items-center w-full">
-        {steps.slice(0, 3).map((step, index) => (
+        {steps.map((step, index) => (
           <div key={step.url} className="flex-1 flex items-center w-full">
             {/* Step Circle */}
             <div
               className={`w-8 h-8 flex items-center justify-center rounded-full ${
                 index === currentStepIndex
                   ? "bg-black text-white"
+                  : index < currentStepIndex
+                  ? "bg-green-500 text-white"
                   : "bg-gray-300 text-gray-500"
               }`}
             >
@@ -91,7 +95,7 @@ const Wizard: React.FC<WizardProps> = ({
         ))}
       </div>
       <div className="flex justify-between mt-2 w-full">
-        {steps.slice(0, 3).map((step, index) => (
+        {steps.map((step, index) => (
           <div
             key={step.url}
             className={`text-center text-xs font-semibold ${
@@ -109,7 +113,7 @@ const Wizard: React.FC<WizardProps> = ({
   const StepContent: React.FC<{ currentStep: any }> = ({ currentStep }) => (
     <div className="flex flex-col items-center align-center justify-center h-auto mt-4">
       {currentStep.img}
-      <h2 className="text-2xlg font-bold">{currentStep.name}</h2>
+      <h2 className="text-2xl font-bold">{currentStep.name}</h2>
       <p className="text-gray-500 text-sm">{currentStep.description}</p>
     </div>
   );

@@ -1,89 +1,95 @@
-// interface/pages/ResultsPages/ResultsPage.tsx
+// interface/pages/Processing/ResultsPages/ResultsPage.tsx
 
 import React, { useContext, useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import Wizard from "../../../components/Feedback/Wizard/wizard";
-import ExtractedStems from "./ExtractedStems";
-import ExtractedMidi from "./ExtractedMidi";
-import Confetti from "react-confetti";
+import { useParams } from "react-router-dom";
 // import { FileContext } from "../../../context/FileContext";
 import { Button } from "../../../components/Button/button";
 import { FileContext } from "../../../context/file.context";
+import ExtractedMidi from "./ExtractedMidi";
+import ExtractedStems from "./ExtractedStems";
 
 const ResultsPage: React.FC = () => {
-  const { result, uploadStatus, error } = useContext(FileContext);
-  const navigate = useNavigate();
-  const { method } = useParams<{ method: string }>();
-  const [showConfetti, setShowConfetti] = useState<boolean>(false);
+  const { method, trackName } = useParams<{
+    method: string;
+    trackName: string;
+  }>();
+  const { fetchResult } = useContext(FileContext);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [data, setData] = useState<any>(null);
 
   useEffect(() => {
-    if (uploadStatus === "Completed" && result) {
-      setShowConfetti(true); // Trigger confetti on successful completion
-    } else if (uploadStatus === "Error") {
-      // Stay on the page to display error
-    }
-  }, [uploadStatus, result]);
+    const fetchResults = async () => {
+      try {
+        if (!method || !trackName) {
+          throw new Error("Invalid parameters provided.");
+        }
 
-  const handleRetry = () => {
-    navigate("/process/select-segment");
-  };
+        // console.log(
+        //   "Fetching results for method:",
+        //   method,
+        //   "and trackName:",
+        //   trackName
+        // );
 
-  const ShowMethodResults = () => {
-    if (result) {
-      const processingResults = result.results || result; // Adjust based on how 'result' is set
+        const fetchedData = await fetchResult(method, trackName);
+        console.log("Fetched Data:", fetchedData);
 
-      if (method === "midi" && result.midi && result.midi.midi_files) {
-        return <ExtractedMidi midiFiles={result.midi.midi_files} />;
-      } else if (method === "stems" && result.stems) {
-        return <ExtractedStems stems={result.stems.stems} />;
-      } else {
-        return (
-          <div className="text-center">
-            <h2 className="text-xl font-bold text-red-700">
-              Invalid Result Data
-            </h2>
-            <p className="text-md text-gray-700 mt-2">
-              It seems we couldn’t retrieve the processed file. Please try
-              again.
-            </p>
-            <Button type="fill" onClick={handleRetry}>
-              Retry
-            </Button>
-          </div>
+        if (fetchedData) {
+          setData(fetchedData);
+          setLoading(false);
+        } else {
+          throw new Error("No data found for the provided track.");
+        }
+      } catch (err: any) {
+        console.error("Error fetching results:", err);
+        setError(
+          err.message ||
+            "It seems we couldn’t retrieve the processed file. Please try again."
         );
+        setLoading(false);
       }
-    } else {
-      return (
-        <p className="text-md text-gray-700 mt-2 text-sm text-red-700">
-          It seems we couldn’t retrieve the processed file. Please try again.
-        </p>
-      );
-    }
-  };
+    };
+
+    fetchResults();
+  }, [method, trackName]);
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full p-6">
+        <p className="text-lg text-gray-700">Loading results...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full p-6">
+        <h2 className="text-xl font-bold text-red-700">Error</h2>
+        <p className="text-md text-gray-700 mt-2">{error}</p>
+        <Button type="fill" onClick={() => window.history.back()}>
+          Go Back
+        </Button>
+      </div>
+    );
+  }
 
   return (
-    <Wizard>
-      <div className="flex flex-col flex-grow h-full p-6 justify-center align-center">
-        {showConfetti && <Confetti recycle={false} numberOfPieces={500} />}
-
-        {uploadStatus === "Error" ? (
-          <div className="error-container text-center">
-            <h2 className="text-2xl font-bold text-red-600">
-              Processing Failed
-            </h2>
-            <p className="text-md text-gray-700 mt-2">
-              {error ||
-                "An unexpected error occurred during processing. Please try again or contact support."}
-            </p>
-            <Button type="fill" onClick={handleRetry} className="mt-4">
-              Retry
-            </Button>
-          </div>
-        ) : (
-          <ShowMethodResults />
-        )}
-      </div>
-    </Wizard>
+    <div className="p-6">
+      {method === "midi" && data?.midi?.midi_files && (
+        <ExtractedMidi midiFiles={data.midi.midi_files} />
+      )}
+      {method === "stems" && data?.stems && (
+        <ExtractedStems stems={data.stems.stems} />
+      )}
+      {/* Handle cases where expected data is missing */}
+      {(method === "midi" && !data?.midi?.midi_files) ||
+      (method === "stems" && !data?.stems) ? (
+        <div className="flex flex-col items-center justify-center h-full p-6">
+          <p className="text-gray-700">No results available.</p>
+        </div>
+      ) : null}
+    </div>
   );
 };
 

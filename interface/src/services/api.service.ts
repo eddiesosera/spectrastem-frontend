@@ -8,6 +8,8 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 interface UploadResponse {
   status: string;
   track_name: string;
+  generate_midi: boolean;
+  process_stems: boolean;
   results?: {
     stems?: { [key: string]: string };
     midi_files?: { [key: string]: string };
@@ -84,7 +86,7 @@ export const checkProcessingStatus = async (
 
     const data: StatusResponse = await response.json();
     return data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("API Error:", error);
     throw error;
   }

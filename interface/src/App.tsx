@@ -1,3 +1,5 @@
+// interface/App.tsx
+
 import React from "react";
 import { BrowserRouter as Router } from "react-router-dom";
 import { AuthProvider } from "./context/auth.context";
@@ -15,6 +17,8 @@ const App: React.FC = () => {
         <AuthProvider>
           <FileProvider>
             <TimerProvider>
+              {" "}
+              {/* Uncommented TimerProvider */}
               <Provider store={store}>
                 <AppRoutes />
               </Provider>

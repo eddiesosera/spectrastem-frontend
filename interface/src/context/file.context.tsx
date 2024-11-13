@@ -7,6 +7,10 @@ import React, {
   Dispatch,
   SetStateAction,
 } from "react";
+import {
+  uploadAndProcessFile,
+  checkProcessingStatus,
+} from "../services/api.service";
 
 type UploadStatus = "Idle" | "Uploading" | "Processing" | "Completed" | "Error";
 
@@ -15,10 +19,13 @@ interface MidiResults {
   midi_files: { [key: string]: string };
 }
 
+interface StemsResults {
+  [key: string]: string;
+}
+
 interface ProcessingResults {
-  stems?: { [key: string]: string };
+  stems?: StemsResults;
   midi?: MidiResults;
-  message?: string;
   trackName?: string;
   status?: string;
 }
@@ -34,6 +41,7 @@ interface FileContextProps {
   setError: Dispatch<SetStateAction<string | null>>;
   result: ResultData;
   setResult: Dispatch<SetStateAction<ResultData>>;
+  fetchResult: (method: string, trackName: string) => Promise<ResultData>;
 }
 
 export const FileContext = createContext<FileContextProps>({
@@ -45,6 +53,7 @@ export const FileContext = createContext<FileContextProps>({
   setError: () => {},
   result: null,
   setResult: () => {},
+  fetchResult: async () => null,
 });
 
 export const FileProvider: React.FC<{ children: ReactNode }> = ({
@@ -54,6 +63,43 @@ export const FileProvider: React.FC<{ children: ReactNode }> = ({
   const [uploadStatus, setUploadStatus] = useState<UploadStatus>("Idle");
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<ResultData>(null);
+
+  const fetchResult = async (
+    method: string,
+    trackName: string
+  ): Promise<ResultData> => {
+    try {
+      const status = await checkProcessingStatus(trackName);
+      console.log("Processing Status:", status); // Debugging log
+
+      if (status.status === "Completed") {
+        let processedResults: ProcessingResults = {
+          status: status.status,
+          trackName: trackName,
+        };
+        if (method === "midi" && status.results?.midi?.midi_files) {
+          processedResults.midi = {
+            message: status.results.midi.message,
+            midi_files: status.results.midi.midi_files,
+          };
+        }
+        if (method === "stems" && status.results?.stems) {
+          processedResults.stems = status.results.stems;
+        }
+
+        setResult(processedResults);
+        return processedResults;
+      } else if (status.status === "Error") {
+        throw new Error(status.message || "Processing failed.");
+      } else {
+        // Still processing
+        return null;
+      }
+    } catch (err: any) {
+      console.error("Error fetching results:", err);
+      throw new Error(err.message || "Failed to fetch the processed file.");
+    }
+  };
 
   return (
     <FileContext.Provider
@@ -66,6 +112,7 @@ export const FileProvider: React.FC<{ children: ReactNode }> = ({
         setError,
         result,
         setResult,
+        fetchResult,
       }}
     >
       {children}
