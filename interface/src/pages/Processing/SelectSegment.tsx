@@ -9,6 +9,8 @@ import { ChevronDownIcon } from "@heroicons/react/24/solid";
 import { Button } from "../../components/Button/button";
 import Dropdown from "../../components/Dropdown/dropdown";
 import Wizard from "../../components/Feedback/Wizard/wizard";
+import { WaveSpinner } from "react-spinners-kit";
+import Waveform from "../../components/Input/Waveform/waveform";
 
 const SelectSegment: React.FC = () => {
   const { uploadedFile, setUploadedFile, setUploadStatus, setError } =
@@ -184,18 +186,28 @@ const SelectSegment: React.FC = () => {
         <ExtractStemsDropdown key="extract-stems-dropdown" />,
       ]}
     >
-      <div className="flex flex-col items-center justify-center h-full p-6">
-        <input
-          type="file"
-          accept="audio/*"
-          onChange={handleFileUpload}
-          disabled={isLoading}
-          className="mb-4"
-        />
-        {uploadedFile && (
-          <p className="text-gray-700">Selected File: {uploadedFile.name}</p>
-        )}
-      </div>
+      {isLoading ? (
+        // Show loader and uploading text
+        <div className="flex flex-col items-center justify-center gap-4">
+          <WaveSpinner className="size-6" size={30} color="#534BAF" />
+          <p className="text-lg text-gray-700">Uploading...</p>
+        </div>
+      ) : (
+        // Show waveform and file selection when not loading
+        <div className="flex flex-col items-center justify-center h-full p-6">
+          {/* <input
+            type="file"
+            accept="audio/*"
+            onChange={handleFileUpload}
+            disabled={isLoading}
+            className="mb-4"
+          /> */}
+          {/* {uploadedFile && (
+            <p className="text-gray-700">Selected File: {uploadedFile.name}</p>
+          )} */}
+          {uploadedFile && <Waveform audioFile={uploadedFile} />}
+        </div>
+      )}
     </Wizard>
   );
 };
