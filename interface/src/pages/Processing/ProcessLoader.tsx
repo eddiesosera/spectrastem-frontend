@@ -102,9 +102,7 @@ const ProcessLoaderPage: React.FC = () => {
       <div className="flex flex-col items-center justify-center h-full p-6">
         <WaveSpinner className="size-6" size={50} color="#534BAF" />
         <p className="text-lg text-gray-700 mt-4">Processing your file...</p>
-        <p className="text-sm text-gray-500 mt-2">
-          Please wait while we process your request.
-        </p>
+        {/* Optionally, add EstimatedTimeLeft component if implemented */}
       </div>
     </Wizard>
   );

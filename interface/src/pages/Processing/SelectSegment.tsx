@@ -16,6 +16,9 @@ const SelectSegment: React.FC = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
+  /**
+   * Handles file upload from the input.
+   */
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -23,6 +26,9 @@ const SelectSegment: React.FC = () => {
     }
   };
 
+  /**
+   * Handles the Generate MIDI action.
+   */
   const handleGenerateMIDI = async () => {
     if (!uploadedFile) {
       setError("No file uploaded.");
@@ -31,19 +37,22 @@ const SelectSegment: React.FC = () => {
 
     setIsLoading(true);
     setUploadStatus("Uploading");
+    console.log("Upload started");
+
     try {
+      // Initiate the upload and processing
       const response = await uploadAndProcessFile(uploadedFile, {
         generateMIDI: true,
         processStems: false,
       });
 
-      console.log("Upload Response:", response); // Debugging log
+      console.log("Upload response:", response); // Debugging log
 
       if (response.status === "Uploaded") {
         const uniqueTrackName = response.track_name;
         setUploadStatus("Processing");
 
-        // Navigate to ProcessLoader without setting remainingTime
+        // Navigate to Process Loader Page
         navigate("/process/processing-audio", {
           state: {
             trackName: uniqueTrackName,
@@ -56,13 +65,20 @@ const SelectSegment: React.FC = () => {
         setUploadStatus("Error");
       }
     } catch (error: any) {
-      setError(error.message || "An unexpected error occurred.");
+      setError(
+        error.message || "An unexpected error occurred during MIDI generation."
+      );
       setUploadStatus("Error");
     } finally {
       setIsLoading(false);
+      console.log("Upload ended");
     }
   };
 
+  /**
+   * Handles the Extract Stems option selection.
+   * @param type Type of stem separation.
+   */
   const handleStemsOptionSelect = async (
     type: "all" | "vocals_instrumentals"
   ) => {
@@ -73,20 +89,23 @@ const SelectSegment: React.FC = () => {
 
     setIsLoading(true);
     setUploadStatus("Uploading");
+    console.log("Stems upload started");
+
     try {
+      // Initiate the upload and processing
       const response = await uploadAndProcessFile(uploadedFile, {
         generateMIDI: false,
         processStems: true,
         stemsType: type,
       });
 
-      console.log("Upload Response:", response); // Debugging log
+      console.log("Stems upload response:", response); // Debugging log
 
       if (response.status === "Uploaded") {
         const uniqueTrackName = response.track_name;
         setUploadStatus("Processing");
 
-        // Navigate to ProcessLoader without setting remainingTime
+        // Navigate to Process Loader Page
         navigate("/process/processing-audio", {
           state: {
             trackName: uniqueTrackName,
@@ -95,14 +114,14 @@ const SelectSegment: React.FC = () => {
           },
         });
       } else {
-        setError(response.message || "File processing failed.");
-        setUploadStatus("Error");
+        throw new Error(response.message || "File processing failed.");
       }
     } catch (error: any) {
       setError(error.message || "An unexpected error occurred.");
       setUploadStatus("Error");
     } finally {
       setIsLoading(false);
+      console.log("Stems upload ended");
     }
   };
 
@@ -179,6 +198,19 @@ const SelectSegment: React.FC = () => {
       </div>
     </Wizard>
   );
+};
+
+/**
+ * Retrieves the current upload speed.
+ * Implement this function to calculate actual upload speed if desired.
+ * For simplicity, it returns undefined to exclude upload time from estimation.
+ * @returns Upload speed in KB/s or undefined.
+ */
+const getUploadSpeed = (): number | undefined => {
+  // Implement logic to measure upload speed if needed
+  // This could involve tracking upload progress and calculating speed
+  // For now, return undefined to exclude upload time
+  return undefined;
 };
 
 export default SelectSegment;
