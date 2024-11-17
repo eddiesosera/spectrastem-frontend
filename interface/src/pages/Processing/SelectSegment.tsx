@@ -195,16 +195,6 @@ const SelectSegment: React.FC = () => {
       ) : (
         // Show waveform and file selection when not loading
         <div className="flex flex-col items-center justify-center h-full p-6">
-          {/* <input
-            type="file"
-            accept="audio/*"
-            onChange={handleFileUpload}
-            disabled={isLoading}
-            className="mb-4"
-          /> */}
-          {/* {uploadedFile && (
-            <p className="text-gray-700">Selected File: {uploadedFile.name}</p>
-          )} */}
           {uploadedFile && <Waveform audioFile={uploadedFile} />}
         </div>
       )}
