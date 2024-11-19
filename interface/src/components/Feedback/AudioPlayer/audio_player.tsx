@@ -33,7 +33,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ audioSrc, fileName }) => {
         volume: 1, // Set initial volume to 1 (not muted)
       });
 
-      waveSurferRef.current.load(audioSrc);
+      waveSurferRef?.current?.load(audioSrc);
 
       // Cleanup on component unmount
       return () => {
@@ -81,8 +81,8 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ audioSrc, fileName }) => {
   };
 
   return (
-    <div className="p-4 bg-gray-100 rounded-lg shadow-md w-full max-w-md">
-      <div className="flex items-center space-x-4 mb-4">
+    <div className="flex flex-row justify-center items-center p-4 bg-gray-100 rounded-lg shadow-md w-full max-w-md">
+      <div className="flex flex-row justify-center items-center items-center space-x-4 mb-4">
         {/* Play/Pause button */}
         <button
           onClick={handlePlayPause}

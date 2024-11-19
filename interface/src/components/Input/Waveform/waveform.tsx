@@ -221,9 +221,10 @@ const Waveform: React.FC<WaveformPreview> = ({ audioFile }) => {
           ref={waveformRef}
           style={{ width: "100%", height: "100px" }}
         ></div>
-        <div className="">
-          Crop your file in a DAW. Cropping feature in progress.
-        </div>
+      </div>
+
+      <div className="flex items-center text-sm text-gray-500">
+        Crop your file in a DAW. Cropping feature in progress.
       </div>
 
       {/* Controls */}
