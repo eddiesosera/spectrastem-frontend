@@ -1,6 +1,6 @@
 // interface/pages/SelectSegment.tsx
 
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { uploadAndProcessFile } from "../../services/api.service";
 import { FileContext } from "../../context/file.context";
@@ -136,7 +136,7 @@ const SelectSegment: React.FC = () => {
         isLoading ? "opacity-50 cursor-not-allowed" : ""
       }`}
     >
-      <span className="text-sm">Extract Stems</span>
+      <span className="text-sm">Seperate Stems</span>
       <ChevronDownIcon className="w-4 h-4" />
     </div>
   );
@@ -151,7 +151,7 @@ const SelectSegment: React.FC = () => {
       disabled={isLoading}
       className={isLoading ? "opacity-50 cursor-not-allowed" : ""}
     >
-      Generate MIDI
+      Extract MIDI
     </Button>
   );
 
@@ -178,6 +178,12 @@ const SelectSegment: React.FC = () => {
     />
   );
 
+  useEffect(() => {
+    if (!uploadedFile) {
+      alert("No audio uploaded. Upload audio");
+    }
+  }, [uploadedFile]);
+
   return (
     <Wizard
       headerRightEl={null}
@@ -196,6 +202,12 @@ const SelectSegment: React.FC = () => {
         // Show waveform and file selection when not loading
         <div className="flex flex-col items-center justify-center h-full p-6">
           {uploadedFile && <Waveform audioFile={uploadedFile} />}
+          {!uploadedFile && (
+            <div className="flex flex-col gap-2 items-center">
+              <p className="text-sm text-red-500">No audio source.</p>
+              <Button type="outline">Uplaod Audio</Button>
+            </div>
+          )}
         </div>
       )}
     </Wizard>

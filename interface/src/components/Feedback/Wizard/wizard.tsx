@@ -69,7 +69,12 @@ const Wizard: React.FC<WizardProps> = ({
     <div className="wizard-progress-bar bg-white rounded-lg p-6 shadow-sm mb-8">
       <div className="flex justify-between items-center w-full">
         {steps.map((step, index) => (
-          <div key={step.url} className="flex-1 flex items-center w-full">
+          <div
+            key={step.url}
+            className={`${
+              index + 1 === steps?.length ? "flex-1 w-fit" : " w-full"
+            } flex items-center`}
+          >
             {/* Step Circle */}
             <div
               className={`w-8 h-8 flex items-center justify-center rounded-full ${
@@ -111,7 +116,7 @@ const Wizard: React.FC<WizardProps> = ({
 
   // StepContent Component for displaying the step image, title, and description
   const StepContent: React.FC<{ currentStep: any }> = ({ currentStep }) => (
-    <div className="flex flex-col items-center align-center justify-center h-auto mt-4">
+    <div className="flex flex-col items-center align-center justify-center h-auto mt-[100px]">
       {currentStep.img}
       <h2 className="text-2xl font-bold">{currentStep.name}</h2>
       <p className="text-gray-500 text-sm">{currentStep.description}</p>
@@ -159,7 +164,11 @@ const Wizard: React.FC<WizardProps> = ({
 
   return (
     <div className="wizard flex flex-grow p-4 w-full h-full bg-[#F5F4FB]">
-      <div className="wizard-inner flex gap-4 w-full h-full">
+      <div className="wizard-inner flex gap-2 w-full h-full">
+        <div className="wizard-sidebar h-full w-1/3 bg-wizard-s-bg rounded-[1.25rem] border border-[#D2D2D2] p-6">
+          <ProgressBar steps={steps} currentStepIndex={currentStepIndex} />
+          <StepContent currentStep={steps[currentStepIndex]} />
+        </div>
         <div className="wizard-container flex flex-col flex-grow p-6 bg-white rounded-[1.25rem] border border-[#D2D2D2] justify-between h-full">
           {header !== undefined ? header : defaultHeader}
           <div className="wizard-content flex flex-col flex-grow h-full p-6 justify-center">
@@ -171,10 +180,6 @@ const Wizard: React.FC<WizardProps> = ({
             })}
           </div>
           {footer !== undefined ? footer : defaultFooter}
-        </div>
-        <div className="wizard-sidebar h-full w-1/3 bg-wizard-s-bg rounded-[1.25rem] border border-[#D2D2D2] p-6">
-          <ProgressBar steps={steps} currentStepIndex={currentStepIndex} />
-          <StepContent currentStep={steps[currentStepIndex]} />
         </div>
       </div>
     </div>

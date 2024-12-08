@@ -8,7 +8,11 @@ export const desktopItems: MenuItem[] = [
     header: <DropdownHeader label="Stems" dropdownId="stemsDropdown" />,
     items: [
       {
-        label: "Instrument & Vox",
+        label: "Instrument & Vocals",
+        onClick: () => console.log("Instrument & Vox clicked"),
+      },
+      {
+        label: "All Stems",
         onClick: () => console.log("Instrument & Vox clicked"),
       },
     ],
@@ -19,23 +23,19 @@ export const desktopItems: MenuItem[] = [
     header: <DropdownHeader label="Midi" dropdownId="midiDropdown" />,
     items: [
       {
-        label: "Option 1",
+        label: "Extract Midi",
         onClick: () => console.log("Option 1 clicked"),
-      },
-      {
-        label: "Option 2",
-        onClick: () => console.log("Option 2 clicked"),
       },
     ],
   },
+  // {
+  //   type: "link",
+  //   label: "Sheet",
+  //   href: "#",
+  // },
   {
     type: "link",
-    label: "Sheet",
-    href: "#",
-  },
-  {
-    type: "link",
-    label: "About",
+    label: "Contact",
     href: "#",
   },
 ];

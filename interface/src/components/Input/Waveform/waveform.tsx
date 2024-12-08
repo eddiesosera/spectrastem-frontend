@@ -196,7 +196,14 @@ const Waveform: React.FC<WaveformPreview> = ({ audioFile }) => {
     <div className="flex flex-col flex-grow gap-8 w-full h-full items-center justify-center">
       {error && <p style={{ color: "red" }}>{error}</p>}
 
-      {waveformReady && <div className="text-sm">{audioFile?.name}</div>}
+      {waveformReady && (
+        <div className="flex flex-col gap-2 items-center">
+          <div className="text-sm">{audioFile?.name}</div>
+          <div className="flex items-center text-sm text-gray-500">
+            Crop your file in a DAW. Cropping feature in progress.
+          </div>
+        </div>
+      )}
 
       {/* Loader */}
       {!waveformReady && (
@@ -223,30 +230,26 @@ const Waveform: React.FC<WaveformPreview> = ({ audioFile }) => {
         ></div>
       </div>
 
-      <div className="flex items-center text-sm text-gray-500">
-        Crop your file in a DAW. Cropping feature in progress.
-      </div>
-
       {/* Controls */}
-      <div className="waveform-controls flex flex-row items-center justify-center gap-8">
-        {waveformReady && (
-          <div className="flex flex-row gap-2 border p-2 px-4 rounded-full">
-            {/* Play/Pause button */}
-            <div onClick={handlePlayPause}>
-              {isPlaying ? (
-                <PauseIcon className="size-6 cursor-pointer" />
-              ) : (
-                <PlayIcon className="size-6 cursor-pointer" />
-              )}
-            </div>
-
-            {/* Stop/Restart button */}
-            <div onClick={handleStop}>
-              <StopIcon className="size-6 cursor-pointer" />
-            </div>
+      {waveformReady && (
+        <div className="flex flex-row gap-2 border p-2 px-4 rounded-full">
+          {/* Play/Pause button */}
+          <div onClick={handlePlayPause}>
+            {isPlaying ? (
+              <PauseIcon className="size-6 cursor-pointer" />
+            ) : (
+              <PlayIcon className="size-6 cursor-pointer" />
+            )}
           </div>
-        )}
-
+          {/* Stop/Restart button */}
+          <div onClick={handleStop}>
+            <StopIcon className="size-6 cursor-pointer" />
+          </div>
+        </div>
+      )}
+      {/* More Controls */}
+      {/* Speed dropdown */}
+      <div className="waveform-controls flex flex-row items-center justify-center gap-8 w-full">
         {waveformReady && (
           <div className="w-fit">
             <Dropdown
@@ -269,6 +272,7 @@ const Waveform: React.FC<WaveformPreview> = ({ audioFile }) => {
           </div>
         )}
 
+        {/* Loopping control */}
         <div className="flex flex-row gap-2">
           {waveformReady && (
             <div
@@ -285,11 +289,15 @@ const Waveform: React.FC<WaveformPreview> = ({ audioFile }) => {
             </div>
           )}
 
+          {/* Crop audio contol */}
           {waveformReady && (
-            <Button type="outline" onClick={cropAudio}>
+            <div
+              className={`flex flex-row items-center justify-center gap-1 radius p-2 rounded-md cursor-pointer hover:border-[#DDDDDD] border`}
+              onClick={cropAudio}
+            >
               <IoCrop className="size-6 cursor-pointer" />{" "}
               <div className="text-xs">Crop</div>
-            </Button>
+            </div>
           )}
         </div>
       </div>
