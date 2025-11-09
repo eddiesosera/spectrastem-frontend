@@ -65,7 +65,7 @@ These instructions will help you set up the Spectrastem project on your local ma
 
 2. Set up both the **interface** and **engine**:
     - [Interface Setup Instructions](interface/README.md)
-    - [Engine Setup Instructions](engine/README.md)
+    - [Engine Setup Instructions](https://github.com/eddiesosera/spectrastem-engine)
 
 ### Running the Project
 
