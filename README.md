@@ -4,8 +4,8 @@
 [![Instagram][instagram-shield]][instagram-url]
 
 <p align="center">
-  <a href="https://github.com/eddiesosera/spectrastem-frontend/spectrastem_logo_w_v1.png">
-    <img src="./assets/icon.png" alt="Logo" width="140" height="140">
+  <a href="https://github.com/eddiesosera/spectrastem-frontend">
+    <img src="https://github.com/eddiesosera/spectrastem-frontend/blob/main/spectrastem_logo_w_v1.png" alt="Logo" width="140" height="140">
   </a>
 </p>
 
