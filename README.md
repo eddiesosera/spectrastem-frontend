@@ -13,7 +13,7 @@
 <p align="center">
   Deconstruct songs into isolated stems, MIDI tracks, and sheet music.
   <br />
-  <a href="https://github.com/eddiesosera/spectrastem-frontend">View Demo</a> ·
+  <a href="https://drive.google.com/file/d/19AiK5tgej5L6RXKMjok5TXrzcSTgNSoP/view?usp=drive_link">View Demo</a> ·
   <a href="https://github.com/your-repo/spectrastem/issues">Report Bug</a> ·
   <a href="https://github.com/your-repo/spectrastem/issues">Request Feature</a>
 </p>
