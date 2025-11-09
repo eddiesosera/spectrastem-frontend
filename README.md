@@ -18,7 +18,7 @@
   <a href="https://github.com/your-repo/spectrastem/issues">Request Feature</a>
 </p>
 
-<img src="https://github.com/eddiesosera/spectrastem-frontend/blob/main/Spectrastem%20Landing.png" alt="Logo" width="800" height="200">
+<img src="https://github.com/eddiesosera/spectrastem-frontend/blob/main/Spectrastem%20Landing.png" alt="Logo" width="1000" height="700">
 
 <!-- TABLE OF CONTENTS -->
 
