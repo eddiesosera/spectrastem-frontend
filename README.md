@@ -11,7 +11,7 @@
 
 <h3 align="center">Spectrastem</h3>
 <p align="center">
-  Deconstruct songs into isolated stems, MIDI tracks, and sheet music.
+  Deconstruct songs into isolated stems and MIDI tracks.
   <br />
   <a href="https://drive.google.com/file/d/19AiK5tgej5L6RXKMjok5TXrzcSTgNSoP/view?usp=drive_link">View Demo</a> ·
   <a href="https://github.com/your-repo/spectrastem/issues">Report Bug</a> ·
@@ -38,10 +38,10 @@
 
 ## Project Overview
 
-Spectrastem is an tool designed to deconstruct songs into isolated audio stems, MIDI tracks, and sheet music, providing musicians and producers with the power to manipulate, remix, and learn from complex audio files. The project is built with a two-part architecture:
+Spectrastem is an tool designed to deconstruct songs into isolated audio stems ans MIDI tracks, providing musicians and producers with the power to manipulate, remix, and learn from complex audio files. The project is built with a two-part architecture:
 
 1. **Interface**: A React-based web application that offers users an intuitive interface for uploading audio files and viewing separated components.
-2. **Engine**: A Flask-based backend server responsible for the actual audio processing, including separating stems, generating MIDI, and creating sheet music.
+2. **Engine**: A Flask-based backend server responsible for the actual audio processing, including separating stems and generating MIDI.
 
 <!-- GETTING STARTED -->
 
